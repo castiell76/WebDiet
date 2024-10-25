@@ -1,5 +1,8 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using AutoMapper;
+using Microsoft.AspNetCore.Mvc;
 using WebDiet.Server.Entities;
+using WebDiet.Server.Models;
+using WebDiet.Server.Services;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
@@ -9,37 +12,69 @@ namespace WebDiet.Server.Controllers
     [ApiController]
     public class IngredientsController : ControllerBase
     {
-        private readonly ApplicationDbContext _context;
-        public IngredientsController(ApplicationDbContext context)
+        private readonly IIngredientService _service;
+        public IngredientsController(IIngredientService service)
         {
-            _context = context;
+            _service = service;
+        }
+
+        [HttpPut("{id}")]
+        public ActionResult Update(int id, IngredientDto dto)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+            else
+            {
+                var isUpdated = _service.Update(id, dto);
+                if (!isUpdated)
+                {
+                    return NotFound();
+                }
+                return Ok();
+            }
+           
+        }
+
+        [HttpDelete("{id}")]
+        public ActionResult Delete([FromRoute]int id)
+        {
+            var isDeleted = _service.Delete(id);
+            if (isDeleted)
+            {
+                return NoContent();
+            }
+
+            return NotFound();
         }
 
         [HttpPost]
-        public ActionResult CreateIngredient([FromBody]Ingredient ingredient)
+        public ActionResult Create([FromBody] IngredientDto ingredientDto)
         {
             if(!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
-            _context.Ingredients.Add(ingredient);
-            _context.SaveChanges();
+            _service.Create(ingredientDto);
 
-            return Created($"/api/ingredients/{ingredient.Id}", null);
+            return Created($"/api/ingredients/{ingredientDto.Id}", null);
         }
         // GET: api/<ValuesController>
         [HttpGet]
-        public ActionResult<IEnumerable<Ingredient>> GetAll()
+        public ActionResult<IEnumerable<IngredientDto>> GetAll()
         {
-            var ingredients = _context.Ingredients.ToList();
-            return Ok(ingredients);
+            var ingredientsDtos = _service.GetAll();
+
+            return Ok(ingredientsDtos);
         }
 
         // GET api/<ValuesController>/5
         [HttpGet("{id}")]
-        public ActionResult<IEnumerable<Ingredient>> Get([FromRoute] int id)
+        public ActionResult<IEnumerable<IngredientDto>> Get([FromRoute] int id)
         {
-            var ingredient = _context.Ingredients.FirstOrDefault(i=>i.Id == id);
+            var ingredient = _service.GetById(id);
+
             if(ingredient == null)
             {
                 return NotFound();

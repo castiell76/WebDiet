@@ -1,6 +1,8 @@
 using Microsoft.EntityFrameworkCore;
+using System.Reflection;
 using WebDiet.Server;
 using WebDiet.Server.Entities;
+using WebDiet.Server.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -9,11 +11,16 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers(options => options.SuppressImplicitRequiredAttributeForNonNullableReferenceTypes = true);
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+builder.Services.AddScoped<IIngredientService, IngredientsService>();
+
+//mappers
+builder.Services.AddAutoMapper(Assembly.GetExecutingAssembly());
 
 //adding dbcontext 
 
 builder.Services.AddDbContext<ApplicationDbContext>();
 builder.Services.AddScoped<Seeder>();
+
 
 var app = builder.Build();
 
