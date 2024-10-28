@@ -35,7 +35,7 @@ namespace WebDiet.Server
                     Fat = 22,
                     KCal = 38,
                     Description = "testowy opis 1",
-                    Allergens = new List<string>() {"allergen1", "allergen2"},
+                    
 
                 },
                 new Ingredient()
@@ -46,7 +46,7 @@ namespace WebDiet.Server
                     Fat = 220,
                     KCal = 380,
                     Description = "testowy opis 2",
-                    Allergens = new List<string>() {"allergen1", "allergen2"},
+                 
 
                 },
             };

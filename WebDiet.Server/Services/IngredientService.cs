@@ -3,32 +3,35 @@ using WebDiet.Server.Entities;
 using Microsoft.AspNetCore.Mvc;
 using AutoMapper;
 using WebDiet.Server.Models;
+using WebDiet.Server.Exceptions;
 
 namespace WebDiet.Server.Services
 {
     public interface IIngredientService
     {
-        Ingredient GetById(int id);
+        IngredientDto GetById(int id);
         IEnumerable<IngredientDto> GetAll();
         int Create(IngredientDto ingredient);
-        bool Delete(int id);
+        void Delete(int id);
 
-        bool Update(int id, IngredientDto ingredient);
+        void Update(int id, IngredientDto ingredient);
     }
 
-    public class IngredientsService : IIngredientService
+    public class IngredientService : IIngredientService
     {
         private ApplicationDbContext _context;
+        private readonly ILogger<IngredientService> _logger;
         private IMapper _mapper;
-        public IngredientsService(ApplicationDbContext context, IMapper mapper)
+        public IngredientService(ApplicationDbContext context, IMapper mapper, ILogger<IngredientService> logger)
         {
             _context = context;
             _mapper = mapper;
+            _logger = logger;
         }
-        public bool Update(int id, IngredientDto updatedIngredient)
+        public void Update(int id, IngredientDto updatedIngredient)
         {
             var ingredient = _context.Ingredients.FirstOrDefault(x => x.Id == id);
-            if (ingredient == null) return false;
+            if (ingredient == null) throw new NotFoundException("Ingredient not found");
 
             ingredient.Name = updatedIngredient.Name ?? ingredient.Name;
             ingredient.Protein = updatedIngredient.Protein ?? ingredient.Protein;
@@ -39,18 +42,17 @@ namespace WebDiet.Server.Services
 
             _context.SaveChanges();
 
-            return true; 
-
         }
-        public Ingredient GetById(int id)
+        public IngredientDto GetById(int id)
         {
             var ingredient = _context.Ingredients.FirstOrDefault(i => i.Id == id);
             var ingredientDto = _mapper.Map<IngredientDto>(ingredient);
             if (ingredient == null)
             {
-                return null;
+                throw new NotFoundException("Ingredient not found");
             }
-            return ingredient;
+            
+            return ingredientDto;
         }
 
         public IEnumerable<IngredientDto> GetAll()
@@ -68,15 +70,16 @@ namespace WebDiet.Server.Services
             return ingredient.Id;
         }
 
-        public bool Delete(int id)
+        public void Delete(int id)
         {
+            _logger.LogWarning($"Ingredient id:{id} DELETE action has been invoked");
+
            var ingredient = _context.Ingredients.FirstOrDefault(i => i.Id == id);
 
-            if (ingredient is null) return false;
+            if (ingredient is null) throw new NotFoundException("Ingredient not found");
 
             _context.Ingredients.Remove(ingredient);
             _context.SaveChanges();
-            return true;
 
         }
     }

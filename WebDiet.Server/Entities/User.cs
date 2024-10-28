@@ -7,6 +7,5 @@
 
         public ICollection<Menu> Menus { get; set; }
 
-        public ICollection<DishIngredient> DishIngredients { get; set; }
     }
 }

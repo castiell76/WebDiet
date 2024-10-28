@@ -10,10 +10,10 @@ namespace WebDiet.Server.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class IngredientsController : ControllerBase
+    public class IngredientController : ControllerBase
     {
         private readonly IIngredientService _service;
-        public IngredientsController(IIngredientService service)
+        public IngredientController(IIngredientService service)
         {
             _service = service;
         }
@@ -21,41 +21,21 @@ namespace WebDiet.Server.Controllers
         [HttpPut("{id}")]
         public ActionResult Update(int id, IngredientDto dto)
         {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
-            else
-            {
-                var isUpdated = _service.Update(id, dto);
-                if (!isUpdated)
-                {
-                    return NotFound();
-                }
-                return Ok();
-            }
-           
+            _service.Update(id, dto);
+            return Ok();
+
         }
 
         [HttpDelete("{id}")]
         public ActionResult Delete([FromRoute]int id)
         {
-            var isDeleted = _service.Delete(id);
-            if (isDeleted)
-            {
-                return NoContent();
-            }
-
-            return NotFound();
+            _service.Delete(id);
+            return NoContent();
         }
 
         [HttpPost]
         public ActionResult Create([FromBody] IngredientDto ingredientDto)
         {
-            if(!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
             _service.Create(ingredientDto);
 
             return Created($"/api/ingredients/{ingredientDto.Id}", null);
@@ -74,14 +54,8 @@ namespace WebDiet.Server.Controllers
         public ActionResult<IEnumerable<IngredientDto>> Get([FromRoute] int id)
         {
             var ingredient = _service.GetById(id);
-
-            if(ingredient == null)
-            {
-                return NotFound();
-            }
             return Ok(ingredient);
         }
-
       
     }
 }

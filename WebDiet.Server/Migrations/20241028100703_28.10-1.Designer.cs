@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using WebDiet.Server.Entities;
 
@@ -11,9 +12,11 @@ using WebDiet.Server.Entities;
 namespace WebDiet.Server.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20241028100703_28.10-1")]
+    partial class _28101
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -22,39 +25,6 @@ namespace WebDiet.Server.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
-            modelBuilder.Entity("WebDiet.Server.Entities.Allergen", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<int?>("DishId")
-                        .HasColumnType("int");
-
-                    b.Property<int?>("IngredientId")
-                        .HasColumnType("int");
-
-                    b.Property<int?>("MenuId")
-                        .HasColumnType("int");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(30)
-                        .HasColumnType("nvarchar(30)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("DishId");
-
-                    b.HasIndex("IngredientId");
-
-                    b.HasIndex("MenuId");
-
-                    b.ToTable("Allergens");
-                });
-
             modelBuilder.Entity("WebDiet.Server.Entities.Dish", b =>
                 {
                     b.Property<int>("Id")
@@ -62,6 +32,10 @@ namespace WebDiet.Server.Migrations
                         .HasColumnType("int");
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Allergens")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<double?>("Carbo")
                         .HasColumnType("float");
@@ -138,6 +112,9 @@ namespace WebDiet.Server.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
+                    b.Property<string>("Allergens")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<double?>("Carbo")
                         .IsRequired()
                         .HasColumnType("float");
@@ -174,6 +151,10 @@ namespace WebDiet.Server.Migrations
                         .HasColumnType("int");
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Allergens")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<double?>("Carbo")
                         .HasColumnType("float");
@@ -219,21 +200,6 @@ namespace WebDiet.Server.Migrations
                     b.HasKey("UserId");
 
                     b.ToTable("Users");
-                });
-
-            modelBuilder.Entity("WebDiet.Server.Entities.Allergen", b =>
-                {
-                    b.HasOne("WebDiet.Server.Entities.Dish", null)
-                        .WithMany("Allergens")
-                        .HasForeignKey("DishId");
-
-                    b.HasOne("WebDiet.Server.Entities.Ingredient", null)
-                        .WithMany("Allergens")
-                        .HasForeignKey("IngredientId");
-
-                    b.HasOne("WebDiet.Server.Entities.Menu", null)
-                        .WithMany("Allergens")
-                        .HasForeignKey("MenuId");
                 });
 
             modelBuilder.Entity("WebDiet.Server.Entities.DishIngredient", b =>
@@ -295,8 +261,6 @@ namespace WebDiet.Server.Migrations
 
             modelBuilder.Entity("WebDiet.Server.Entities.Dish", b =>
                 {
-                    b.Navigation("Allergens");
-
                     b.Navigation("DishIngredients");
 
                     b.Navigation("DishMenus");
@@ -304,15 +268,11 @@ namespace WebDiet.Server.Migrations
 
             modelBuilder.Entity("WebDiet.Server.Entities.Ingredient", b =>
                 {
-                    b.Navigation("Allergens");
-
                     b.Navigation("DishIngredients");
                 });
 
             modelBuilder.Entity("WebDiet.Server.Entities.Menu", b =>
                 {
-                    b.Navigation("Allergens");
-
                     b.Navigation("DishesMenu");
                 });
 

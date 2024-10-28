@@ -9,6 +9,8 @@ namespace WebDiet.Server.Mappers
         public IngredientMappingProfile()
         {
             CreateMap<Ingredient, IngredientDto>();
+
+            //if props in dto and main class name different then need smth like below
                 //.ForMember(i => i.Name, c => c.MapFrom(s => s.Name))
                 //.ForMember(i => i.Protein, c => c.MapFrom(s => s.Protein))
                 //.ForMember(i => i.Carbo, c => c.MapFrom(s => s.Carbo))

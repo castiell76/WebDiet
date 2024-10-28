@@ -11,7 +11,7 @@ namespace WebDiet.Server.Entities
         [MaxLength(30)]
         public string Name { get; set; }
         public string? Description { get; set; }
-        public List<string>? Allergens { get; set; }
+        public List<Allergen>? Allergens { get; set; }
         [Required]
         public double? KCal { get; set; }
         [Required]

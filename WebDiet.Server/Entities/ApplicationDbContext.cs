@@ -10,14 +10,15 @@ namespace WebDiet.Server.Entities
         public DbSet<Dish> Dishes { get; set; }
         public DbSet<Menu> Menus { get; set; }
         public DbSet<DishIngredient> DishIngredients { get; set; }
+
+        public DbSet<Allergen> Allergens { get; set; }
         
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
 
-            // Konfiguracja relacji wiele-do-wielu dla Dish-Ingredient
             modelBuilder.Entity<DishIngredient>()
-                .HasKey(di => new { di.DishId, di.IngredientId, di.UserId });
+                .HasKey(di => new { di.DishId, di.IngredientId });
 
             modelBuilder.Entity<DishIngredient>()
                 .HasOne(di => di.Dish)
@@ -31,33 +32,31 @@ namespace WebDiet.Server.Entities
                 .HasForeignKey(di => di.IngredientId)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            modelBuilder.Entity<DishIngredient>()
-                .HasOne(di => di.User)
-                .WithMany(u => u.DishIngredients)
-                .HasForeignKey(di => di.UserId)
+            modelBuilder.Entity<DishMenu>()
+                .HasKey(di => new { di.DishId, di.MenuId });
+
+            modelBuilder.Entity<DishMenu>()
+                .HasOne(di => di.Dish)
+                .WithMany(d => d.DishMenus)
+                .HasForeignKey(di => di.DishId)
+                .OnDelete(DeleteBehavior.Restrict); //cascade delete off
+
+            modelBuilder.Entity<DishMenu>()
+                .HasOne(di => di.Menu)
+                .WithMany(i => i.DishesMenu)
+                .HasForeignKey(di => di.MenuId)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            // Konfiguracja relacji wiele-do-jednego dla Dish-Menu
-            modelBuilder.Entity<Dish>()
-                .HasOne(d => d.Menu)
-                .WithMany(m => m.Dishes)
-                .HasForeignKey(d => d.MenuId)
-                .OnDelete(DeleteBehavior.Restrict);
 
             modelBuilder.Entity<Dish>()
                 .Property(d => d.Name)
                 .IsRequired();
 
-            // Konfiguracja relacji jeden-do-wielu dla User-Menu
             modelBuilder.Entity<Menu>()
                 .HasOne(m => m.User)
                 .WithMany(u => u.Menus)
                 .HasForeignKey(m => m.UserId)
                 .OnDelete(DeleteBehavior.Restrict);
-
-            modelBuilder.Entity<Menu>()
-                .Property(m => m.Name)
-                .IsRequired();
 
             modelBuilder.Entity<Menu>()
                 .Property(m => m.Date)
@@ -66,6 +65,12 @@ namespace WebDiet.Server.Entities
             modelBuilder.Entity<Ingredient>()
                 .Property(i => i.Name)
                 .HasMaxLength(30);
+
+            modelBuilder.Entity<Allergen>()
+                .Property(i => i.Name)
+                .HasMaxLength(30)
+                .IsRequired();
+
         }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
