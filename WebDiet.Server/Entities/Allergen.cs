@@ -8,5 +8,9 @@ namespace WebDiet.Server.Entities
 
         [Required]
         public string Name { get; set; }
+
+        public ICollection<DishAllergen> DishAllergens { get; set; }
+        public ICollection<IngredientAllergen> IngredientAllergens { get; set; }
+        public ICollection<MenuAllergen> MenuAllergens { get; set; }
     }
 }
