@@ -10,12 +10,60 @@ namespace WebDiet.Server.Entities
         public DbSet<Dish> Dishes { get; set; }
         public DbSet<Menu> Menus { get; set; }
         public DbSet<DishIngredient> DishIngredients { get; set; }
+        public DbSet<DishAllergen> DishAllergens { get; set; }
+        public DbSet<DishMenu> DishMenus { get; set; }
+        public DbSet<IngredientAllergen> IngredientAllergens { get; set; }
+        public DbSet<MenuAllergen> MenuAllergens { get; set; }
 
         public DbSet<Allergen> Allergens { get; set; }
         
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            modelBuilder.Entity<MenuAllergen>()
+                .HasKey(ma => new { ma.MenuId, ma.AllergenId });
+
+            modelBuilder.Entity<MenuAllergen>()
+                .HasOne(ma => ma.Menu)
+                .WithMany(m => m.MenuAllergens)
+                .HasForeignKey(ma => ma.MenuId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<MenuAllergen>()
+                .HasOne(ma => ma.Allergen)
+                .WithMany(a => a.MenuAllergens)
+                .HasForeignKey(ma => ma.AllergenId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<IngredientAllergen>()
+                .HasKey(ia => new { ia.IngredientId, ia.AllergenId });
+
+            modelBuilder.Entity<IngredientAllergen>()
+                .HasOne(ia => ia.Ingredient)
+                .WithMany(i => i.IngredientAllergens)
+                .HasForeignKey(ia => ia.IngredientId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<IngredientAllergen>()
+                .HasOne(ia => ia.Allergen)
+                .WithMany(a => a.IngredientAllergens)
+                .HasForeignKey(ia => ia.AllergenId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<DishAllergen>()
+                .HasKey(di => new { di.DishId, di.AllergenId });
+
+            modelBuilder.Entity<DishAllergen>()
+                .HasOne(da => da.Dish)
+                .WithMany(d => d.DishAllergens)
+                .HasForeignKey(da => da.DishId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<DishAllergen>()
+                .HasOne(da => da.Allergen)
+                .WithMany(a => a.DishAllergens)
+                .HasForeignKey(da => da.AllergenId)
+                .OnDelete(DeleteBehavior.Cascade);
 
             modelBuilder.Entity<DishIngredient>()
                 .HasKey(di => new { di.DishId, di.IngredientId });
