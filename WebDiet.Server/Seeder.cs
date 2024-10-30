@@ -18,6 +18,13 @@ namespace WebDiet.Server
                 if (!_context.Ingredients.Any())
                 {
                     _context.Ingredients.AddRange(GetIngredients());
+
+                    _context.SaveChanges();
+                }
+                if (!_context.Roles.Any())
+                {
+                    _context.Roles.AddRange(GetRoles());
+
                     _context.SaveChanges();
                 }
             }
@@ -49,6 +56,26 @@ namespace WebDiet.Server
                  
 
                 },
+            };
+        }
+
+        private IEnumerable<Role> GetRoles()
+        {
+            return new List<Role>()
+            {
+                new Role()
+                {
+                    Name = "User",
+                },
+                new Role()
+                {
+                    Name = "Moderator",
+                },
+                new Role()
+                {
+                    Name = "Admin",
+                }
+
             };
         }
 

@@ -6,6 +6,11 @@ using WebDiet.Server.Services;
 using NLog.Web;
 using WebDiet.Server.Middleware;
 using static WebDiet.Server.Services.IAllergenService;
+using Microsoft.AspNetCore.Identity;
+using FluentValidation;
+using WebDiet.Server.Models;
+using WebDiet.Server.Models.Validators;
+using FluentValidation.AspNetCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -15,12 +20,15 @@ builder.Host.UseNLog();
 
 // Add services to the container.
 
-builder.Services.AddControllers(options => options.SuppressImplicitRequiredAttributeForNonNullableReferenceTypes = true);
+builder.Services.AddControllers(options => options.SuppressImplicitRequiredAttributeForNonNullableReferenceTypes = true).AddFluentValidation();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddScoped<IIngredientService, IngredientService>();
 builder.Services.AddScoped<IAllergenService, AllergenService>();
+builder.Services.AddScoped<IAccountService, AccountService>();
 builder.Services.AddScoped<ErrorHandlingMiddleware>();
+builder.Services.AddScoped<IPasswordHasher<User>, PasswordHasher<User>>();
+builder.Services.AddScoped<IValidator<RegisterUserDto>, RegisterUserDtoValidator>();
 builder.Services.AddScoped<RequestTimeMiddleware>();
 
 //mappers

@@ -5,6 +5,8 @@ namespace WebDiet.Server.Entities
     public class ApplicationDbContext : DbContext
     {
         private string _connectionString = "Server=(LocalDb)\\MSSQLLocalDB;Database=ApplicationDb;Trusted_Connection=True;";
+
+        public DbSet<Role> Roles { get; set; }
         public DbSet<User> Users { get; set; }
         public DbSet<Ingredient> Ingredients { get; set; }
         public DbSet<Dish> Dishes { get; set; }
@@ -20,6 +22,8 @@ namespace WebDiet.Server.Entities
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+
+
             modelBuilder.Entity<MenuAllergen>()
                 .HasKey(ma => new { ma.MenuId, ma.AllergenId });
 
@@ -95,6 +99,13 @@ namespace WebDiet.Server.Entities
                 .HasForeignKey(di => di.MenuId)
                 .OnDelete(DeleteBehavior.Restrict);
 
+            modelBuilder.Entity<User>()
+                .Property(d => d.Email)
+                .IsRequired();
+
+            modelBuilder.Entity<Role>()
+                .Property(d => d.Name)
+                .IsRequired();
 
             modelBuilder.Entity<Dish>()
                 .Property(d => d.Name)
