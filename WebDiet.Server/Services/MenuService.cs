@@ -1,13 +1,11 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using AutoMapper;
 using WebDiet.Server.Entities;
-using Microsoft.AspNetCore.Mvc;
-using AutoMapper;
-using WebDiet.Server.Models;
 using WebDiet.Server.Exceptions;
+using WebDiet.Server.Models;
 
 namespace WebDiet.Server.Services
 {
-    public interface IIngredientService
+    public interface IMenuService
     {
         IngredientDto GetById(int id);
         IEnumerable<IngredientDto> GetAll();
@@ -16,13 +14,12 @@ namespace WebDiet.Server.Services
 
         void Update(int id, IngredientDto ingredient);
     }
-
-    public class IngredientService : IIngredientService
+    public class MenuService
     {
         private ApplicationDbContext _context;
-        private readonly ILogger<IngredientService> _logger;
+        private readonly ILogger<MenuService> _logger;
         private IMapper _mapper;
-        public IngredientService(ApplicationDbContext context, IMapper mapper, ILogger<IngredientService> logger)
+        public MenuService(ApplicationDbContext context, IMapper mapper, ILogger<MenuService> logger)
         {
             _context = context;
             _mapper = mapper;
@@ -51,7 +48,7 @@ namespace WebDiet.Server.Services
             {
                 throw new NotFoundException("Ingredient not found");
             }
-            
+
             return ingredientDto;
         }
 
@@ -62,9 +59,9 @@ namespace WebDiet.Server.Services
             return ingredientsDtos;
         }
 
-        public int Create(IngredientDto dto)
+        public int Create(MenuDto dto)
         {
-           var ingredient = _mapper.Map<Ingredient>(dto);
+            var ingredient = _mapper.Map<Ingredient>(dto);
             _context.Ingredients.Add(ingredient);
 
             //DLA MENU
@@ -77,7 +74,7 @@ namespace WebDiet.Server.Services
         {
             _logger.LogWarning($"Ingredient id:{id} DELETE action has been invoked");
 
-           var ingredient = _context.Ingredients.FirstOrDefault(i => i.Id == id);
+            var ingredient = _context.Ingredients.FirstOrDefault(i => i.Id == id);
 
             if (ingredient is null) throw new NotFoundException("Ingredient not found");
 

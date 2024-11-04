@@ -1,27 +1,23 @@
-﻿using AutoMapper;
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using WebDiet.Server.Entities;
 using WebDiet.Server.Models;
 using WebDiet.Server.Services;
-
-// For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
 namespace WebDiet.Server.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
     [Authorize]
-    public class IngredientController : ControllerBase
+    public class MenuController : ControllerBase
     {
-        private readonly IIngredientService _service;
-        public IngredientController(IIngredientService service)
+        private readonly IMenuService _service;
+        public MenuController(IMenuService service)
         {
             _service = service;
         }
 
         [HttpPut("{id}")]
-        [Authorize(Roles = "Admin,Moderator")]
 
         public ActionResult Update(int id, IngredientDto dto)
         {
@@ -31,15 +27,13 @@ namespace WebDiet.Server.Controllers
         }
 
         [HttpDelete("{id}")]
-        [Authorize(Roles = "Admin,Moderator")]
-        public ActionResult Delete([FromRoute]int id)
+        public ActionResult Delete([FromRoute] int id)
         {
             _service.Delete(id);
             return NoContent();
         }
 
         [HttpPost]
-        [Authorize(Roles = "Admin,Moderator")]
         public ActionResult Create([FromBody] IngredientDto ingredientDto)
         {
             //DLA MENU
@@ -65,6 +59,5 @@ namespace WebDiet.Server.Controllers
             var ingredient = _service.GetById(id);
             return Ok(ingredient);
         }
-      
     }
 }

@@ -13,6 +13,8 @@ using WebDiet.Server.Models.Validators;
 using FluentValidation.AspNetCore;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
+using Microsoft.AspNetCore.Authorization;
+using WebDiet.Server.Authorization;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -45,6 +47,7 @@ option.DefaultChallengeScheme = "Bearer";
 builder.Services.AddControllers(options => options.SuppressImplicitRequiredAttributeForNonNullableReferenceTypes = true);
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+builder.Services.AddScoped<IAuthorizationHandler, ResourceOperationRequirementHandler>();
 builder.Services.AddScoped<IIngredientService, IngredientService>();
 builder.Services.AddScoped<IAllergenService, AllergenService>();
 builder.Services.AddScoped<IAccountService, AccountService>();
@@ -80,6 +83,7 @@ app.UseMiddleware<ErrorHandlingMiddleware>();
 app.UseMiddleware<RequestTimeMiddleware>();
 
 app.UseAuthentication();
+
 app.UseHttpsRedirection();
 
 app.UseAuthorization();
