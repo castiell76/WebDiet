@@ -13,6 +13,6 @@ namespace WebDiet.Server.Services
 
         public ClaimsPrincipal User => _httpContextAccessor.HttpContext?.User;
 
-        public int? GetUserId => User is null ? null : User.FindFirst(c=> c.Cla)
+        //public int? GetUserId => User is null ? null : User.FindFirst(c=> c.Cla)
     }
 }

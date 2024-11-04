@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 using WebDiet.Server.Models;
 using WebDiet.Server.Services;
 
@@ -19,7 +20,7 @@ namespace WebDiet.Server.Controllers
 
         [HttpPut("{id}")]
 
-        public ActionResult Update(int id, IngredientDto dto)
+        public ActionResult Update(int id, MenuDto dto)
         {
             _service.Update(id, dto);
             return Ok();
@@ -34,30 +35,38 @@ namespace WebDiet.Server.Controllers
         }
 
         [HttpPost]
-        public ActionResult Create([FromBody] IngredientDto ingredientDto)
+        public ActionResult Create([FromBody] MenuDto menuDto)
         {
-            //DLA MENU
-            //var userId = User.FindFirst(c=> c.Type == ClaimTypes.NameIdentifier).Value);
+            var userId = Int32.Parse(User.FindFirst(c=> c.Type == ClaimTypes.NameIdentifier).Value);
 
-            _service.Create(ingredientDto); //, userId
+            _service.Create(menuDto, userId); //, userId
 
-            return Created($"/api/ingredients/{ingredientDto.Id}", null);
+            return Created($"/api/menus/{menuDto.Id}", null);
         }
         // GET: api/<ValuesController>
         [HttpGet]
-        public ActionResult<IEnumerable<IngredientDto>> GetAll()
+        public ActionResult<IEnumerable<MenuDto>> GetAll()
         {
-            var ingredientsDtos = _service.GetAll();
+            var menusDtos = _service.GetAll();
 
-            return Ok(ingredientsDtos);
+            return Ok(menusDtos);
         }
 
         // GET api/<ValuesController>/5
         [HttpGet("{id}")]
-        public ActionResult<IEnumerable<IngredientDto>> Get([FromRoute] int id)
+        public ActionResult<IEnumerable<MenuDto>> Get([FromRoute] int id)
         {
-            var ingredient = _service.GetById(id);
-            return Ok(ingredient);
+            var menu = _service.GetById(id);
+            return Ok(menu);
         }
+
+        //public ActionResult Test()
+        //{
+        //    var userId = Int32.Parse(User.FindFirst(c => c.Type == ClaimTypes.NameIdentifier).Value);
+
+        //    _service.Create(menuDto, userId); //, userId
+
+        //    return Created($"/api/menus/{menuDto.Id}", null);
+        //}
     }
 }

@@ -7,14 +7,14 @@ namespace WebDiet.Server.Services
 {
     public interface IMenuService
     {
-        IngredientDto GetById(int id);
-        IEnumerable<IngredientDto> GetAll();
-        int Create(IngredientDto ingredient);
+        MenuDto GetById(int id);
+        IEnumerable<MenuDto> GetAll();
+        int Create(MenuDto menu, int userId);
         void Delete(int id);
 
-        void Update(int id, IngredientDto ingredient);
+        void Update(int id, MenuDto menu);
     }
-    public class MenuService
+    public class MenuService : IMenuService
     {
         private ApplicationDbContext _context;
         private readonly ILogger<MenuService> _logger;
@@ -25,60 +25,59 @@ namespace WebDiet.Server.Services
             _mapper = mapper;
             _logger = logger;
         }
-        public void Update(int id, IngredientDto updatedIngredient)
+        public void Update(int id, MenuDto updatedMenu)
         {
-            var ingredient = _context.Ingredients.FirstOrDefault(x => x.Id == id);
-            if (ingredient == null) throw new NotFoundException("Ingredient not found");
+            var menu = _context.Menus.FirstOrDefault(x => x.Id == id);
+            if (menu == null) throw new NotFoundException("Menu not found");
 
-            ingredient.Name = updatedIngredient.Name ?? ingredient.Name;
-            ingredient.Protein = updatedIngredient.Protein ?? ingredient.Protein;
-            ingredient.Carbo = updatedIngredient.Carbo ?? ingredient.Carbo;
-            ingredient.Fat = updatedIngredient.Fat ?? ingredient.Fat;
-            ingredient.KCal = updatedIngredient.KCal ?? ingredient.KCal;
-            ingredient.Description = updatedIngredient.Description ?? ingredient.Description;
+            menu.Description = updatedMenu.Description ?? menu.Description;
+            menu.KCal = updatedMenu.KCal ?? menu.KCal;
+            menu.Protein = updatedMenu.Protein ?? menu.Protein;
+            menu.Carbo = updatedMenu.Carbo ?? menu.Carbo;
+            menu.Fat = updatedMenu.Fat ?? menu.Fat;
+            menu.Date = updatedMenu.Date;
 
             _context.SaveChanges();
 
         }
-        public IngredientDto GetById(int id)
+        public MenuDto GetById(int id)
         {
-            var ingredient = _context.Ingredients.FirstOrDefault(i => i.Id == id);
-            var ingredientDto = _mapper.Map<IngredientDto>(ingredient);
-            if (ingredient == null)
+            var menu = _context.Menus.FirstOrDefault(i => i.Id == id);
+            var menuDto = _mapper.Map<MenuDto>(menu);
+            if (menu == null)
             {
-                throw new NotFoundException("Ingredient not found");
+                throw new NotFoundException("Menu not found");
             }
 
-            return ingredientDto;
+            return menuDto;
         }
 
-        public IEnumerable<IngredientDto> GetAll()
+        public IEnumerable<MenuDto> GetAll()
         {
-            var ingredients = _context.Ingredients.ToList();
-            var ingredientsDtos = _mapper.Map<List<IngredientDto>>(ingredients);
-            return ingredientsDtos;
+            var menus = _context.Menus.ToList();
+            var menusDtos = _mapper.Map<List<MenuDto>>(menus);
+            return menusDtos;
         }
 
-        public int Create(MenuDto dto)
+        public int Create(MenuDto dto, int userId)
         {
-            var ingredient = _mapper.Map<Ingredient>(dto);
-            _context.Ingredients.Add(ingredient);
-
-            //DLA MENU
-            //menu.userId = userId przekazanego w konstruktorze jako int userId
+            var menu = _mapper.Map<Menu>(dto);
+            menu.UserId = userId;
+            _context.Menus.Add(menu);
             _context.SaveChanges();
-            return ingredient.Id;
+
+            return menu.Id;
         }
 
         public void Delete(int id)
         {
-            _logger.LogWarning($"Ingredient id:{id} DELETE action has been invoked");
+            _logger.LogWarning($"Menu id:{id} DELETE action has been invoked");
 
-            var ingredient = _context.Ingredients.FirstOrDefault(i => i.Id == id);
+            var menu = _context.Menus.FirstOrDefault(i => i.Id == id);
 
-            if (ingredient is null) throw new NotFoundException("Ingredient not found");
+            if (menu is null) throw new NotFoundException("Menu not found");
 
-            _context.Ingredients.Remove(ingredient);
+            _context.Menus.Remove(menu);
             _context.SaveChanges();
 
         }

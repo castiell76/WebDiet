@@ -1,5 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using WebDiet.Server.Models;
+using WebDiet.Server.Services;
 
 
 namespace WebDiet.Server.Controllers
@@ -9,36 +11,55 @@ namespace WebDiet.Server.Controllers
     [Authorize]
     public class DishController : ControllerBase
     {
-        // GET: api/<DishController>
-        [HttpGet]
-        public IEnumerable<string> GetAll()
+        private readonly IDishService _service;
+        public DishController(IDishService service)
         {
-            return new string[] { "value1", "value2" };
+            _service = service;
         }
 
-        // GET api/<DishController>/5
-        [HttpGet("{id}")]
-        public string Get(int id)
-        {
-            return "value";
-        }
-
-        // POST api/<DishController>
-        [HttpPost]
-        public void Post([FromBody] string value)
-        {
-        }
-
-        // PUT api/<DishController>/5
         [HttpPut("{id}")]
-        public void Put(int id, [FromBody] string value)
+        [Authorize(Roles = "Admin,Moderator")]
+
+        public ActionResult Update(int id, DishDto dto)
         {
+            _service.Update(id, dto);
+            return Ok();
+
         }
 
-        // DELETE api/<DishController>/5
         [HttpDelete("{id}")]
-        public void Delete(int id)
+        [Authorize(Roles = "Admin,Moderator")]
+        public ActionResult Delete([FromRoute] int id)
         {
+            _service.Delete(id);
+            return NoContent();
+        }
+
+        [HttpPost]
+        [Authorize(Roles = "Admin,Moderator")]
+        public ActionResult Create([FromBody] DishDto dishDto)
+        {
+
+
+            _service.Create(dishDto); //, userId
+
+            return Created($"/api/dishes/{dishDto.Id}", null);
+        }
+        // GET: api/<ValuesController>
+        [HttpGet]
+        public ActionResult<IEnumerable<DishDto>> GetAll()
+        {
+            var dishesDtos = _service.GetAll();
+
+            return Ok(dishesDtos);
+        }
+
+        // GET api/<ValuesController>/5
+        [HttpGet("{id}")]
+        public ActionResult<IEnumerable<DishDto>> Get([FromRoute] int id)
+        {
+            var dish = _service.GetById(id);
+            return Ok(dish);
         }
     }
 }

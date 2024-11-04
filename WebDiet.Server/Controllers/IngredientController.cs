@@ -42,8 +42,6 @@ namespace WebDiet.Server.Controllers
         [Authorize(Roles = "Admin,Moderator")]
         public ActionResult Create([FromBody] IngredientDto ingredientDto)
         {
-            //DLA MENU
-            //var userId = User.FindFirst(c=> c.Type == ClaimTypes.NameIdentifier).Value);
 
             _service.Create(ingredientDto); //, userId
 
