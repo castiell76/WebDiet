@@ -11,7 +11,7 @@ namespace WebDiet.Server.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    [Authorize]
+    //[Authorize]
     public class IngredientController : ControllerBase
     {
         private readonly IIngredientService _service;
@@ -21,7 +21,7 @@ namespace WebDiet.Server.Controllers
         }
 
         [HttpPut("{id}")]
-        [Authorize(Roles = "Admin,Moderator")]
+        //[Authorize(Roles = "Admin,Moderator")]
 
         public ActionResult Update(int id, IngredientDto dto)
         {
@@ -31,7 +31,7 @@ namespace WebDiet.Server.Controllers
         }
 
         [HttpDelete("{id}")]
-        [Authorize(Roles = "Admin,Moderator")]
+        //[Authorize(Roles = "Admin,Moderator")]
         public ActionResult Delete([FromRoute]int id)
         {
             _service.Delete(id);
@@ -39,7 +39,7 @@ namespace WebDiet.Server.Controllers
         }
 
         [HttpPost]
-        [Authorize(Roles = "Admin,Moderator")]
+        //[Authorize(Roles = "Admin,Moderator")]
         public ActionResult Create([FromBody] IngredientDto ingredientDto)
         {
 
@@ -58,11 +58,15 @@ namespace WebDiet.Server.Controllers
 
         // GET api/<ValuesController>/5
         [HttpGet("{id}")]
-        public ActionResult<IEnumerable<IngredientDto>> Get([FromRoute] int id)
+        public ActionResult<IngredientDto> Get([FromRoute] int id)
         {
             var ingredient = _service.GetById(id);
+            if (ingredient == null)
+            {
+                return NotFound();
+            }
             return Ok(ingredient);
         }
-      
+
     }
 }

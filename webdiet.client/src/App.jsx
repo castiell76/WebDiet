@@ -1,49 +1,40 @@
-import { useEffect, useState } from 'react';
+import React, { useState, useEffect } from "react";
 import './App.css';
-
+import Navbar from './components/Navbar';
+import Ingredient from './components/Ingredient';
 function App() {
-    const [forecasts, setForecasts] = useState();
+    // Inicjalizacja stanu sk³adnika
+    const [ingredient, setIngredient] = useState(null);
 
     useEffect(() => {
-        populateWeatherData();
+
+        // Pobranie tokena z localStorage
+        const token = localStorage.getItem('token');
+
+        // ¯¹danie do API z do³¹czeniem tokena
+        fetch('/api/ingredient/2', {
+            method: 'GET',
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json',
+            },
+            cache: "no-store"
+        })
+            .then(response => response.json())
+            .then(data => {
+                console.log("Fetched ingredient data:", data); // Logowanie danych do konsoli
+                setIngredient(data); // Ustawienie stanu
+            })
+            .catch(error => console.error("Error fetching ingredient:", error));
     }, []);
 
-    const contents = forecasts === undefined
-        ? <p><em>Loading... Please refresh once the ASP.NET backend has started. See <a href="https://aka.ms/jspsintegrationreact">https://aka.ms/jspsintegrationreact</a> for more details.</em></p>
-        : <table className="table table-striped" aria-labelledby="tableLabel">
-            <thead>
-                <tr>
-                    <th>Date</th>
-                    <th>Temp. (C)</th>
-                    <th>Temp. (F)</th>
-                    <th>Summary</th>
-                </tr>
-            </thead>
-            <tbody>
-                {forecasts.map(forecast =>
-                    <tr key={forecast.date}>
-                        <td>{forecast.date}</td>
-                        <td>{forecast.temperatureC}</td>
-                        <td>{forecast.temperatureF}</td>
-                        <td>{forecast.summary}</td>
-                    </tr>
-                )}
-            </tbody>
-        </table>;
-
     return (
-        <div>
-            <h1 id="tableLabel">Weather forecast</h1>
-            <p>This component demonstrates fetching data from the server.</p>
-            {contents}
+        <div className="App">
+            <Navbar />
+            {/* Przekazanie danych sk³adnika jako prop do komponentu Ingredient */}
+            <Ingredient ingredient={ingredient} />
         </div>
     );
-    
-    async function populateWeatherData() {
-        const response = await fetch('weatherforecast');
-        const data = await response.json();
-        setForecasts(data);
-    }
 }
 
 export default App;
