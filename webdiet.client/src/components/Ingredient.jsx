@@ -4,6 +4,7 @@ export default function Ingredient({ ingredient }) {
     }
 
     return (
+        
         <div className="ingredient-card">
             <h2>{ingredient.name}</h2>
             <p><strong>Kcal:</strong> {ingredient.kcal}</p>

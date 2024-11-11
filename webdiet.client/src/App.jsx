@@ -1,18 +1,15 @@
 import React, { useState, useEffect } from "react";
 import './App.css';
 import Navbar from './components/Navbar';
-import Ingredient from './components/Ingredient';
+import Ingredients from './components/Ingredients';
+
 function App() {
-    // Inicjalizacja stanu sk³adnika
-    const [ingredient, setIngredient] = useState(null);
+    // Inicjalizacja stanu sk³adnika jako pustej tablicy
+    const [ingredients, setIngredients] = useState([]);
 
     useEffect(() => {
-
-        // Pobranie tokena z localStorage
-        const token = localStorage.getItem('token');
-
-        // ¯¹danie do API z do³¹czeniem tokena
-        fetch('/api/ingredient/2', {
+        // Pobranie danych z API
+        fetch('/api/ingredient', {
             method: 'GET',
             headers: {
                 'Accept': 'application/json',
@@ -22,8 +19,8 @@ function App() {
         })
             .then(response => response.json())
             .then(data => {
-                console.log("Fetched ingredient data:", data); // Logowanie danych do konsoli
-                setIngredient(data); // Ustawienie stanu
+                console.log("Fetched ingredient data:", data);
+                setIngredients(data); // Ustawienie stanu jako tablicy sk³adników
             })
             .catch(error => console.error("Error fetching ingredient:", error));
     }, []);
@@ -31,8 +28,7 @@ function App() {
     return (
         <div className="App">
             <Navbar />
-            {/* Przekazanie danych sk³adnika jako prop do komponentu Ingredient */}
-            <Ingredient ingredient={ingredient} />
+            <Ingredients ingredients={ingredients} />
         </div>
     );
 }
