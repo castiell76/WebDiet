@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from "react";
 import './App.css';
 import Navbar from './components/Navbar';
-import Ingredients from './components/Ingredients';
+import Ingredients from './components/Ingredient/IngredientList';
+import AddIngredient from "./components/Ingredient/AddIngredient";
 
 function App() {
     // Inicjalizacja stanu sk³adnika jako pustej tablicy
@@ -28,9 +29,13 @@ function App() {
     return (
         <div className="App">
             <Navbar />
-            <Ingredients ingredients={ingredients} />
+            {/*<Ingredients ingredients={ingredients} />*/}
+            <AddIngredient></AddIngredient>
         </div>
     );
 }
 
 export default App;
+
+
+let smth[items, setitems] = useState(thingsArray)
