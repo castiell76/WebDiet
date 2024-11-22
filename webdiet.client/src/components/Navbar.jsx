@@ -1,30 +1,42 @@
-import React from "react"
-import logo from './assets/logo.png';
+import Container from 'react-bootstrap/Container';
+import Nav from 'react-bootstrap/Nav';
+import Navbar from 'react-bootstrap/Navbar';
+import NavDropdown from 'react-bootstrap/NavDropdown';
 
-export default function Navbar() {
+function NavbarBasic() {
     return (
-    <div>
-        <nav className="navbar-items">
-          <div className="navbar-items-logo">
-            <img src={logo} alt="logo"></img>
-            <h4>Simple Eat</h4>
-          </div>
-           <ul className="navbar-items-menu">
-            <li>Home</li>
-            <li>Recipes
-              <ul className="recipes-drop-down">
-                <li><a href="">Dishes</a></li>
-                <li><a href="">Ingredients</a></li>
-              </ul>
-            </li>
-            
-            <li>About us</li>
-            <li>Contact</li>
-            <li>Get your menu</li>
-          </ul>
-           </nav>
-        
-    </div>
-        
-    )
+
+        <Navbar collapseOnSelect expand="lg" className="bg-body-tertiary">
+            <Container>
+                <Navbar.Brand href="#home">
+                    <img
+                        src="/assets/logo.png"
+                        width = "150">
+                    </img>
+                </Navbar.Brand>
+                <Navbar.Toggle aria-controls="responsive-navbar-nav" />
+                <Navbar.Collapse id="responsive-navbar-nav">
+                    <Nav className="me-auto">
+                        <Nav.Link href="#features">About us</Nav.Link>
+                        <Nav.Link href="#pricing">Contact</Nav.Link>
+                        <NavDropdown title="Database" id="collapsible-nav-dropdown">
+                            <NavDropdown.Item href="#action/3.1">Ingredients</NavDropdown.Item>
+                            <NavDropdown.Item href="#action/3.2">
+                                Meals
+                            </NavDropdown.Item>
+                        </NavDropdown>
+                    </Nav>
+                    <Nav>
+                        <Nav.Link href="#deets">Account?</Nav.Link>
+                        <Nav.Link eventKey={2} href="#memes">
+                            Dank memes
+                        </Nav.Link>
+                    </Nav>
+                </Navbar.Collapse>
+            </Container>
+        </Navbar>
+       
+    );
 }
+
+export default NavbarBasic;

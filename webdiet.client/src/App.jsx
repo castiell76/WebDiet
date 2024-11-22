@@ -3,9 +3,10 @@ import './App.css';
 import Navbar from './components/Navbar';
 import Ingredients from './components/Ingredient/IngredientList';
 import AddIngredient from "./components/Ingredient/AddIngredient";
+import 'bootstrap/dist/css/bootstrap.min.css';
 
 function App() {
-    // Inicjalizacja stanu sk³adnika jako pustej tablicy
+
     const [ingredients, setIngredients] = useState([]);
 
     useEffect(() => {
@@ -29,13 +30,9 @@ function App() {
     return (
         <div className="App">
             <Navbar />
-            {/*<Ingredients ingredients={ingredients} />*/}
-            <AddIngredient></AddIngredient>
         </div>
     );
 }
 
 export default App;
 
-
-let smth[items, setitems] = useState(thingsArray)
