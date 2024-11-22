@@ -3,6 +3,7 @@ import React from 'react';
 export default function AddIngredient() {
     return (
         <main>
+        <h1>Dodaj nowy sk³adnik:</h1>
             <form className="add-ingredient--form">
                 <div>
                     <label>Ingredient name:
