@@ -1,12 +1,14 @@
 ﻿import React, { useState, useEffect } from "react";
 import Table from 'react-bootstrap/Table';
+import Spinner from 'react-bootstrap/Spinner';
+import { Link } from 'react-router-dom';
 
 export default function IngredientList({}) {
 
     const [ingredients, setIngredients] = useState([]);
 
     useEffect(() => {
-        // Pobranie danych z API
+
         fetch('/api/ingredient', {
             method: 'GET',
             headers: {
@@ -18,15 +20,10 @@ export default function IngredientList({}) {
             .then(response => response.json())
             .then(data => {
                 console.log("Fetched ingredient data:", data);
-                setIngredients(data); // Ustawienie stanu jako tablicy składników
+                setIngredients(data); 
             })
             .catch(error => console.error("Error fetching ingredient:", error));
     }, []);
-
-
-    if (!ingredients || ingredients.length === 0) {
-        return <p>Wczytywanie...</p>;
-    }
 
     return (
          <Table striped bordered hover>
@@ -42,7 +39,9 @@ export default function IngredientList({}) {
       <tbody>
               {ingredients.map((ingredient, index) => (
                 <tr key={index}>
-                  <td>{ingredient.name}</td>
+                      <td>
+                          <Link to={`/ingredient/${ingredient.id}`}>{ingredient.name}</Link>
+                      </td>
                   <td>{ingredient.kcal}</td>
                   <td>{ingredient.protein}</td>
                   <td>{ingredient.carbo}</td>
