@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from "react";
-
+ï»¿import React, { useState, useEffect } from "react";
+import Table from 'react-bootstrap/Table';
 
 export default function IngredientList({}) {
 
@@ -18,7 +18,7 @@ export default function IngredientList({}) {
             .then(response => response.json())
             .then(data => {
                 console.log("Fetched ingredient data:", data);
-                setIngredients(data); // Ustawienie stanu jako tablicy sk³adników
+                setIngredients(data); // Ustawienie stanu jako tablicy skÅ‚adnikÃ³w
             })
             .catch(error => console.error("Error fetching ingredient:", error));
     }, []);
@@ -29,18 +29,27 @@ export default function IngredientList({}) {
     }
 
     return (
-
-        <div>
-            <h1>Lista sk³adników:</h1>
-            {ingredients.map((ingredient, index) => (
-                <div className="ingredient-card" key={index}>
-                    <h2>{ingredient.name}</h2>a
-                    <p><strong>Kcal:</strong> {ingredient.kcal}</p>
-                    <p><strong>Protein:</strong> {ingredient.protein}</p>
-                    <p><strong>Carbo:</strong> {ingredient.carbo}</p>
-                    <p><strong>Fat:</strong> {ingredient.fat}</p>
-                </div>
-            ))}
-        </div>
+         <Table striped bordered hover>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Kcal</th>
+          <th>Protein [g]</th>
+                    <th>Carbo [g]</th>
+                    <th>Fat [g]</th>
+        </tr>
+      </thead>
+      <tbody>
+              {ingredients.map((ingredient, index) => (
+                <tr key={index}>
+                  <td>{ingredient.name}</td>
+                  <td>{ingredient.kcal}</td>
+                  <td>{ingredient.protein}</td>
+                  <td>{ingredient.carbo}</td>
+                  <td>{ingredient.fat}</td>
+                </tr>
+              ))}
+            </tbody>
+    </Table>
     );
 }
