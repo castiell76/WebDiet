@@ -8,7 +8,7 @@ namespace WebDiet.Server.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    [Authorize]
+    //[Authorize]
     public class DishController : ControllerBase
     {
         private readonly IDishService _service;
@@ -18,7 +18,7 @@ namespace WebDiet.Server.Controllers
         }
 
         [HttpPut("{id}")]
-        [Authorize(Roles = "Admin,Moderator")]
+        //[Authorize(Roles = "Admin,Moderator")]
 
         public ActionResult Update(int id, DishDto dto)
         {
@@ -28,7 +28,7 @@ namespace WebDiet.Server.Controllers
         }
 
         [HttpDelete("{id}")]
-        [Authorize(Roles = "Admin,Moderator")]
+        //[Authorize(Roles = "Admin,Moderator")]
         public ActionResult Delete([FromRoute] int id)
         {
             _service.Delete(id);
@@ -36,7 +36,7 @@ namespace WebDiet.Server.Controllers
         }
 
         [HttpPost]
-        [Authorize(Roles = "Admin,Moderator")]
+        //[Authorize(Roles = "Admin,Moderator")]
         public ActionResult Create([FromBody] DishDto dishDto)
         {
 

@@ -1,8 +1,11 @@
 ﻿import React from "react";
 import NavbarBasic from './components/Navbar';
-import IngredientList from './components/Ingredient/IngredientList';
+import IngredientsList from './components/Ingredient/IngredientsList';
 import AddIngredient from "./components/Ingredient/AddIngredient";
 import IngredientDetails from "./components/Ingredient/IngredientDetails";
+import AddMeal from "./components/Meal/AddMeal"
+import MealsList from "./components/Meal/MealsList"
+import MealDetails from "./components/Meal/MealDetails"
 import { AnimatePresence, motion } from "framer-motion";
 import 'bootstrap/dist/css/bootstrap.min.css';
 import './App.css';
@@ -26,7 +29,7 @@ function AnimatedApp() {
                 <Routes location={location} key={location.pathname}>
                     <Route path="/ingredients" element={
                         <PageTransition>
-                            <IngredientList />
+                            <IngredientsList />
                         </PageTransition>} />
                     <Route path="/ingredients/add" element={
                         <PageTransition>
@@ -35,6 +38,18 @@ function AnimatedApp() {
                     <Route path="/ingredient/:id" element={
                         <PageTransition>
                             <IngredientDetails />
+                        </PageTransition>} />
+                    <Route path="/meal/:id" element={
+                        <PageTransition>
+                            <MealDetails />
+                        </PageTransition>} />
+                    <Route path="/meals/add" element={
+                        <PageTransition>
+                            <AddMeal />
+                        </PageTransition>} />
+                    <Route path="/meals/" element={
+                        <PageTransition>
+                            <MealsList />
                         </PageTransition>} />
                 </Routes>
             </AnimatePresence>
