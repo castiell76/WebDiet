@@ -24,10 +24,11 @@ function NavbarBasic() {
                             <NavDropdown title="Ingredients">
                                 <NavDropdown.Item as={ Link} to ="/ingredients">Lista składników</NavDropdown.Item>
                                 <NavDropdown.Item as={Link} to="/ingredients/add">Dodaj nowy składnik</NavDropdown.Item>
-                                </NavDropdown>
-                            <NavDropdown.Item href="#action/3.2">
-                                Meals
-                            </NavDropdown.Item>
+                            </NavDropdown>
+                            <NavDropdown title="Meals">
+                                <NavDropdown.Item as={Link} to="/meals">Meals list</NavDropdown.Item>
+                                <NavDropdown.Item as={Link} to="/meals/add">Add new meal</NavDropdown.Item>
+                            </NavDropdown>
                         </NavDropdown>
                     </Nav>
                     <Nav>

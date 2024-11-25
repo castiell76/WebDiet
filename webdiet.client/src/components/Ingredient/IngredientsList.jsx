@@ -1,9 +1,8 @@
 ﻿import React, { useState, useEffect } from "react";
 import Table from 'react-bootstrap/Table';
-import Spinner from 'react-bootstrap/Spinner';
 import { Link } from 'react-router-dom';
 
-export default function IngredientList({}) {
+export default function IngredientsList() {
 
     const [ingredients, setIngredients] = useState([]);
 
