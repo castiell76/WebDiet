@@ -2,3 +2,6 @@
 body {
     font-family: "Montserrat", sans-serif;
 }
+.addForm {
+    display: flex;
+}
