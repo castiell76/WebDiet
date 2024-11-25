@@ -1,4 +1,4 @@
-import Container from 'react-bootstrap/Container';
+Ôªøimport Container from 'react-bootstrap/Container';
 import Nav from 'react-bootstrap/Nav';
 import Navbar from 'react-bootstrap/Navbar';
 import NavDropdown from 'react-bootstrap/NavDropdown';
@@ -22,8 +22,8 @@ function NavbarBasic() {
                         <Nav.Link href="#pricing">Contact</Nav.Link>
                         <NavDropdown title="Database" id="collapsible-nav-dropdown">
                             <NavDropdown title="Ingredients">
-                                <NavDropdown.Item as={ Link} to ="/ingredients">Lista sk≥adnikÛw</NavDropdown.Item>
-                                <NavDropdown.Item as={Link} to="/ingredients/add">Dodaj nowy sk≥adnik</NavDropdown.Item>
+                                <NavDropdown.Item as={ Link} to ="/ingredients">Lista sk≈Çadnik√≥w</NavDropdown.Item>
+                                <NavDropdown.Item as={Link} to="/ingredients/add">Dodaj nowy sk≈Çadnik</NavDropdown.Item>
                                 </NavDropdown>
                             <NavDropdown.Item href="#action/3.2">
                                 Meals
