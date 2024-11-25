@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using WebDiet.Server.Entities;
 
@@ -11,9 +12,11 @@ using WebDiet.Server.Entities;
 namespace WebDiet.Server.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20241125171910_25.11-4")]
+    partial class _25114
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -292,7 +295,7 @@ namespace WebDiet.Server.Migrations
                         .IsRequired();
 
                     b.HasOne("WebDiet.Server.Entities.Dish", "Dish")
-                        .WithMany("DishAllergens")
+                        .WithMany()
                         .HasForeignKey("DishId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -305,7 +308,7 @@ namespace WebDiet.Server.Migrations
             modelBuilder.Entity("WebDiet.Server.Entities.DishIngredient", b =>
                 {
                     b.HasOne("WebDiet.Server.Entities.Dish", "Dish")
-                        .WithMany("DishIngredients")
+                        .WithMany()
                         .HasForeignKey("DishId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -324,7 +327,7 @@ namespace WebDiet.Server.Migrations
             modelBuilder.Entity("WebDiet.Server.Entities.DishMenu", b =>
                 {
                     b.HasOne("WebDiet.Server.Entities.Dish", "Dish")
-                        .WithMany("DishMenus")
+                        .WithMany()
                         .HasForeignKey("DishId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -415,15 +418,6 @@ namespace WebDiet.Server.Migrations
                     b.Navigation("IngredientAllergens");
 
                     b.Navigation("MenuAllergens");
-                });
-
-            modelBuilder.Entity("WebDiet.Server.Entities.Dish", b =>
-                {
-                    b.Navigation("DishAllergens");
-
-                    b.Navigation("DishIngredients");
-
-                    b.Navigation("DishMenus");
                 });
 
             modelBuilder.Entity("WebDiet.Server.Entities.Ingredient", b =>

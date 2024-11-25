@@ -53,14 +53,10 @@ export default function AddMeal() {
     const [formData, setFormData] = useState({
         name: "",
         description: "",
-        kcal: "",
-        protein: "",
-        carbo: "",
-        fat: "",
+        ingredients: [], // Tablica sk³adników
     });
 
     const [ingredients, setIngredients] = useState([]); // Lista sk³adników z API
-    const [selectedIngredients, setSelectedIngredients] = useState([]); // Wybrane sk³adniki
 
     // Pobieranie sk³adników z API
     useEffect(() => {
@@ -72,32 +68,30 @@ export default function AddMeal() {
             .catch((error) => console.error("Error:", error));
     }, []);
 
-    // Dodawanie/aktualizacja sk³adnika
-    const handleSelect = (ingredientId) => {
-        const ingredient = ingredients.find((i) => i.id === ingredientId);
-
-        setSelectedIngredients((prev) => {
-            const existing = prev.find((item) => item.id === ingredientId);
-            if (existing) {
-                return prev; // Nie dodawaj ponownie
-            }
-            console.log("Dodawanie sk³adnika:", ingredient);
-            return [...prev, { ...ingredient, amount: 1 }]; // Dodaj z domyœln¹ iloœci¹
-        });
-    };
-
-    // Aktualizacja iloœci sk³adnika
-    const handleAmountChange = (id, amount) => {
-        setSelectedIngredients((prev) =>
-            prev.map((item) =>
-                item.id === id ? { ...item, amount: amount > 0 ? amount : 1 } : item
-            )
-        );
+    // Dodawanie sk³adnika
+    const addIngredient = (ingredient) => {
+        setFormData((prevData) => ({
+            ...prevData,
+            ingredients: [...prevData.ingredients, { ...ingredient, amount: 0 }],
+        }));
     };
 
     // Usuwanie sk³adnika
-    const handleRemove = (id) => {
-        setSelectedIngredients((prev) => prev.filter((item) => item.id !== id));
+    const removeIngredient = (id) => {
+        setFormData((prevData) => ({
+            ...prevData,
+            ingredients: prevData.ingredients.filter((ingredient) => ingredient.id !== id),
+        }));
+    };
+
+    // Obs³uga zmiany iloœci sk³adnika
+    const updateIngredientAmount = (id, amount) => {
+        setFormData((prevData) => ({
+            ...prevData,
+            ingredients: prevData.ingredients.map((ingredient) =>
+                ingredient.id === id ? { ...ingredient, amount } : ingredient
+            ),
+        }));
     };
 
     // Obs³uga przesy³ania danych
@@ -110,25 +104,23 @@ export default function AddMeal() {
                 headers: {
                     "Content-Type": "application/json",
                 },
-                body: JSON.stringify({ ...formData, selectedIngredients }),
+                body: JSON.stringify(formData),
             });
-
+            console.log("FormData:", formData);
             if (response.ok) {
                 alert("Meal has been added!");
                 setFormData({
                     name: "",
                     description: "",
-                    kcal: "",
-                    protein: "",
-                    carbo: "",
-                    fat: "",
+                    ingredients: [],
                 });
-                setSelectedIngredients([]);
             } else {
+                const errorData = await response.json();
+                console.error("Server error:", errorData);
                 alert("Error occurred.");
             }
         } catch (error) {
-            console.error("Error occurred:", error);
+            console.error("Error occurred:", error.response,   error);
             alert("Error connecting with server.");
         }
     };
@@ -154,9 +146,7 @@ export default function AddMeal() {
                         placeholder="Meal description"
                         value={formData.description}
                         name="description"
-                        onChange={(e) =>
-                            setFormData({ ...formData, description: e.target.value })
-                        }
+                        onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                     />
                 </Form.Group>
                 <Form.Group className="mb-3" controlId="mealIngredients">
@@ -170,8 +160,7 @@ export default function AddMeal() {
                             {ingredients.map((ingredient) => (
                                 <Dropdown.Item
                                     key={ingredient.id}
-                                    eventKey={ingredient.id.toString()}
-                                    onClick={() => handleSelect(ingredient.id)}
+                                    onClick={() => addIngredient(ingredient)}
                                 >
                                     {ingredient.name}
                                 </Dropdown.Item>
@@ -179,40 +168,28 @@ export default function AddMeal() {
                         </Dropdown.Menu>
                     </Dropdown>
                 </Form.Group>
-
-                <h5>Selected Ingredients</h5>
-                {selectedIngredients.map((ingredient) => (
-                    <Form.Group
-                        key={ingredient.id}
-                        className="mb-3 d-flex align-items-center"
-                    >
-                        <Form.Label className="me-3">{ingredient.name}</Form.Label>
-                        <Form.Control
-                            type="number"
-                            min="1"
-                            value={ingredient.amount}
-                            onChange={(e) =>
-                                handleAmountChange(ingredient.id, parseInt(e.target.value, 10))
-                            }
-                            className="me-3"
-                            style={{ width: "100px" }}
-                        />
-                        <Button
-                            variant="danger"
-                            onClick={() => handleRemove(ingredient.id)}
-                        >
-                            X
-                        </Button>
-                    </Form.Group>
-                ))}
-
-                <Button type="submit" variant="primary">
+                <div>
+                    <h5>Selected Ingredients</h5>
+                    {formData.ingredients.map((ingredient, index) => (
+                        <div key={index} style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                            <span>{ingredient.name}</span>
+                            <input
+                                type="number"
+                                value={ingredient.amount}
+                                onChange={(e) =>
+                                    updateIngredientAmount(ingredient.id, parseFloat(e.target.value) || 0)
+                                }
+                            />
+                            <button type="button" onClick={() => removeIngredient(ingredient.id)}>
+                                Remove
+                            </button>
+                        </div>
+                    ))}
+                </div>
+                <Button type="submit" variant="primary" className="mt-3">
                     Add Meal
                 </Button>
             </Form>
         </Container>
     );
 }
-
-
-

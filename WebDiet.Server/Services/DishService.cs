@@ -31,11 +31,13 @@ namespace WebDiet.Server.Services
             var dish = _context.Dishes.FirstOrDefault(x => x.Id == id);
             if (dish == null) throw new NotFoundException("Dish not found");
 
+
+            //TODO CALCULATE NUTRITION VALUES
             dish.Name = updatedDish.Name ?? dish.Name;
-            dish.Protein = updatedDish.Protein ?? dish.Protein;
-            dish.Carbo = updatedDish.Carbo ?? dish.Carbo;
-            dish.Fat = updatedDish.Fat ?? dish.Fat;
-            dish.KCal = updatedDish.KCal ?? dish.KCal;
+            //dish.Protein = updatedDish.Protein ?? dish.Protein;
+            //dish.Carbo = updatedDish.Carbo ?? dish.Carbo;
+            //dish.Fat = updatedDish.Fat ?? dish.Fat;
+            //dish.KCal = updatedDish.KCal ?? dish.KCal;
             dish.Description = updatedDish.Description ?? dish.Description;
 
             _context.SaveChanges();
@@ -62,7 +64,25 @@ namespace WebDiet.Server.Services
 
         public int Create(DishDto dto)
         {
-            var dish = _mapper.Map<Dish>(dto);
+            //TODO CALCULATE NUTRITION VALUES
+
+         
+            var dish = new Dish
+            {
+                Name = dto.Name,
+                Description = dto.Description,
+                DishIngredients = dto.Ingredients.Select(ingredient => new DishIngredient
+                {
+                    IngredientId = ingredient.Id
+                }).ToList(),
+            
+             };
+            dish.KCal = 0;
+            dish.Protein = 1;
+            dish.Fat = 2;
+            dish.Carbo = 3;
+            //dish.DishAllergens = null;
+            //var dish = _mapper.Map<Dish>(dto);
             _context.Dishes.Add(dish);
 
             _context.SaveChanges();

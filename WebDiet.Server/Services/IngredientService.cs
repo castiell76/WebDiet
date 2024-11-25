@@ -37,7 +37,7 @@ namespace WebDiet.Server.Services
             ingredient.Protein = updatedIngredient.Protein ?? ingredient.Protein;
             ingredient.Carbo = updatedIngredient.Carbo ?? ingredient.Carbo;
             ingredient.Fat = updatedIngredient.Fat ?? ingredient.Fat;
-            ingredient.KCal = updatedIngredient.KCal ?? ingredient.KCal;
+            ingredient.KCal = updatedIngredient.Kcal ?? ingredient.KCal;
             ingredient.Description = updatedIngredient.Description ?? ingredient.Description;
 
             _context.SaveChanges();

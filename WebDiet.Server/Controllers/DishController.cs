@@ -40,7 +40,6 @@ namespace WebDiet.Server.Controllers
         public ActionResult Create([FromBody] DishDto dishDto)
         {
 
-
             _service.Create(dishDto); //, userId
 
             return Created($"/api/dishes/{dishDto.Id}", null);

@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using WebDiet.Server.Entities;
 
@@ -11,9 +12,11 @@ using WebDiet.Server.Entities;
 namespace WebDiet.Server.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20241125162634_25.11-1")]
+    partial class _25111
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -52,6 +55,7 @@ namespace WebDiet.Server.Migrations
                         .HasColumnType("float");
 
                     b.Property<string>("Description")
+                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<double?>("Fat")
@@ -307,7 +311,7 @@ namespace WebDiet.Server.Migrations
                     b.HasOne("WebDiet.Server.Entities.Dish", "Dish")
                         .WithMany("DishIngredients")
                         .HasForeignKey("DishId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.HasOne("WebDiet.Server.Entities.Ingredient", "Ingredient")
@@ -326,7 +330,7 @@ namespace WebDiet.Server.Migrations
                     b.HasOne("WebDiet.Server.Entities.Dish", "Dish")
                         .WithMany("DishMenus")
                         .HasForeignKey("DishId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.HasOne("WebDiet.Server.Entities.Menu", "Menu")
