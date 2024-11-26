@@ -75,8 +75,8 @@ namespace WebDiet.Server.Services
                 {
                     IngredientId = ingredient.Id
                 }).ToList(),
-            
-             };
+
+            };
             dish.KCal = 0;
             dish.Protein = 1;
             dish.Fat = 2;

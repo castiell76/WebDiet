@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using WebDiet.Server.Entities;
 using WebDiet.Server.Models;
 using WebDiet.Server.Services;
 
@@ -55,9 +56,13 @@ namespace WebDiet.Server.Controllers
 
         // GET api/<ValuesController>/5
         [HttpGet("{id}")]
-        public ActionResult<IEnumerable<DishDto>> Get([FromRoute] int id)
+        public ActionResult<DishDto> Get([FromRoute] int id)
         {
             var dish = _service.GetById(id);
+            if (dish == null)
+            {
+                return NotFound();
+            }
             return Ok(dish);
         }
     }

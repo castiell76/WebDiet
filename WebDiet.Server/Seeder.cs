@@ -27,6 +27,11 @@ namespace WebDiet.Server
 
                     _context.SaveChanges();
                 }
+                if (!_context.Dishes.Any())
+                {
+                    _context.Dishes.AddRange(GetDishes());
+                    _context.SaveChanges();
+                }
             }
         }
 
@@ -56,6 +61,18 @@ namespace WebDiet.Server
                  
 
                 },
+            };
+        }
+
+        private IEnumerable<Dish> GetDishes()
+        {
+            return new List<Dish>()
+            {
+                new Dish()
+                {
+                    Name = "test",
+                    Description = "testdesc",
+                }
             };
         }
 

@@ -31,7 +31,7 @@ namespace WebDiet.Server.Middleware
                 _logger.LogError(e, e.Message);
 
                 context.Response.StatusCode = 500;
-                await context.Response.WriteAsync("Error occured");
+                await context.Response.WriteAsync(e.Message);
             }
         }
     }
