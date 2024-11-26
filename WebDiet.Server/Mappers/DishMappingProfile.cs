@@ -8,7 +8,8 @@ namespace WebDiet.Server.Mappers
     {
         public DishMappingProfile()
         {
-            CreateMap<Dish, DishDto>().ReverseMap();
+            CreateMap<Dish, DishDto>()
+                .ForMember(d=>d.Ingredients, opt=> opt.MapFrom(src => src.DishIngredients.Select(di => di.Ingredient)));
 
             //if props in dto and main class name different then need smth like below
             //.ForMember(i => i.Name, c => c.MapFrom(s => s.Name))

@@ -57,11 +57,11 @@ namespace WebDiet.Server.Entities
             modelBuilder.Entity<DishAllergen>()
                 .HasKey(di => new { di.DishId, di.AllergenId });
 
-            //modelBuilder.Entity<DishAllergen>()
-            //    .HasOne(da => da.Dish)
-            //    .WithMany(d => d.DishAllergens)
-            //    .HasForeignKey(da => da.DishId)
-            //    .OnDelete(DeleteBehavior.Cascade);
+            modelBuilder.Entity<DishAllergen>()
+                .HasOne(da => da.Dish)
+                .WithMany(d => d.DishAllergens)
+                .HasForeignKey(da => da.DishId)
+                .OnDelete(DeleteBehavior.Cascade);
 
             modelBuilder.Entity<DishAllergen>()
                 .HasOne(da => da.Allergen)
@@ -72,11 +72,11 @@ namespace WebDiet.Server.Entities
             modelBuilder.Entity<DishIngredient>()
                 .HasKey(di => new { di.DishId, di.IngredientId });
 
-            //modelBuilder.Entity<DishIngredient>()
-            //    .HasOne(di => di.Dish)
-            //    .WithMany(d => d.DishIngredients)
-            //    .HasForeignKey(di => di.DishId)
-            //    .OnDelete(DeleteBehavior.Restrict); //cascade delete off
+            modelBuilder.Entity<DishIngredient>()
+                .HasOne(di => di.Dish)
+                .WithMany(d => d.DishIngredients)
+                .HasForeignKey(di => di.DishId)
+                .OnDelete(DeleteBehavior.Restrict); //cascade delete off
 
             modelBuilder.Entity<DishIngredient>()
                 .HasOne(di => di.Ingredient)
@@ -87,11 +87,11 @@ namespace WebDiet.Server.Entities
             modelBuilder.Entity<DishMenu>()
                 .HasKey(di => new { di.DishId, di.MenuId });
 
-            //modelBuilder.Entity<DishMenu>()
-            //    .HasOne(di => di.Dish)
-            //    .WithMany(d => d.DishMenus)
-            //    .HasForeignKey(di => di.DishId)
-            //    .OnDelete(DeleteBehavior.Restrict); //cascade delete off
+            modelBuilder.Entity<DishMenu>()
+                .HasOne(di => di.Dish)
+                .WithMany(d => d.DishMenus)
+                .HasForeignKey(di => di.DishId)
+                .OnDelete(DeleteBehavior.Restrict); //cascade delete off
 
             modelBuilder.Entity<DishMenu>()
                 .HasOne(di => di.Menu)

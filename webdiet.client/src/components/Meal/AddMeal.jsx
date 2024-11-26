@@ -56,7 +56,7 @@ export default function AddMeal() {
         ingredients: [], // Tablica sk³adników
     });
 
-    const [ingredients, setIngredients] = useState([]); // Lista sk³adników z API
+    const [ingredients, setIngredients] = useState([]); 
 
     // Pobieranie sk³adników z API
     useEffect(() => {

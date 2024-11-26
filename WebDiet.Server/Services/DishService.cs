@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Microsoft.EntityFrameworkCore;
 using WebDiet.Server.Entities;
 using WebDiet.Server.Exceptions;
 using WebDiet.Server.Models;
@@ -45,13 +46,17 @@ namespace WebDiet.Server.Services
         }
         public DishDto GetById(int id)
         {
-            var dish = _context.Dishes.FirstOrDefault(i => i.Id == id);
-            var dishDto = _mapper.Map<DishDto>(dish);
+            var dish = _context.Dishes
+                .Include(d => d.DishIngredients)
+                    .ThenInclude(di => di.Ingredient)
+                .FirstOrDefault(d => d.Id == id);
+
             if (dish == null)
             {
                 throw new NotFoundException("Dish not found");
             }
 
+            var dishDto = _mapper.Map<DishDto>(dish);
             return dishDto;
         }
 

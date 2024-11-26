@@ -5,6 +5,7 @@ export default function MealDetails() {
     const { id } = useParams();
     const [meal, setMeal] = useState(null);
 
+
     useEffect(() => {
         fetch(`/api/dish/${id}`)
 
@@ -24,11 +25,19 @@ export default function MealDetails() {
     return (
         <div>
             <h1>{meal.name}</h1>
-            <p><strong>Description:</strong> {meal.description}</p>
-            <p><strong>Kcal:</strong> {meal.kcal}</p>
-            <p><strong>Protein:</strong> {meal.protein}</p>
-            <p><strong>Carbo:</strong> {meal.carbo}</p>
-            <p><strong>Fat:</strong> {meal.fat}</p>
+            <p>{meal.description}</p>
+            <p>Calories: {meal.kcal}</p>
+            <p>Protein: {meal.protein}</p>
+            <p>Carbohydrates: {meal.carbo}</p>
+            <p>Fat: {meal.fat}</p>
+            <h2>Ingredients</h2>
+            <ul>
+                {meal.ingredients.map((ingredient) => (
+                    <li key={ingredient.id}>
+                        {ingredient.name} - {ingredient.quantity || "N/A"}g
+                    </li>
+                ))}
+            </ul>
         </div>
     );
 }
