@@ -35,6 +35,7 @@ namespace WebDiet.Server.Services
 
             //TODO CALCULATE NUTRITION VALUES
             dish.Name = updatedDish.Name ?? dish.Name;
+
             //dish.Protein = updatedDish.Protein ?? dish.Protein;
             //dish.Carbo = updatedDish.Carbo ?? dish.Carbo;
             //dish.Fat = updatedDish.Fat ?? dish.Fat;
@@ -81,16 +82,22 @@ namespace WebDiet.Server.Services
                 }).ToList(),
 
             };
-
-            //TODO CALCULATE NUTRITION VALUES
             dish.KCal = 0;
-            dish.Protein = 1;
-            dish.Fat = 2;
-            dish.Carbo = 3;
-            
+            dish.Protein = 0;
+            dish.Fat = 0;
+            dish.Carbo = 0;
+
+
+            foreach (var ingredientdish in dish.DishIngredients)
+            {
+                var ingredient = _context.Ingredients.Where(i => i.Id == ingredientdish.IngredientId).FirstOrDefault();
+                dish.KCal = dish.KCal + (ingredientdish.Quantity * ingredient.KCal/100);
+                dish.Protein = dish.Protein + (ingredientdish.Quantity * ingredient.Protein / 100);
+                dish.Carbo = dish.Carbo + (ingredientdish.Quantity * ingredient.Carbo / 100);
+                dish.Fat = dish.Fat + (ingredientdish.Quantity * ingredient.Fat / 100);
+            }
+
             //TODO ASSIGN ALLERGENS FROM INGREDIENTS
-            //dish.DishAllergens = null;
-            //var dish = _mapper.Map<Dish>(dto);
             _context.Dishes.Add(dish);
 
             _context.SaveChanges();
