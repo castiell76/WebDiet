@@ -12,5 +12,6 @@ namespace WebDiet.Server.Models
         public double? Protein { get; set; }
         public double? Carbo { get; set; }
         public double? Fat { get; set; }
+        public double? Quantity { get; set; }
     }
 }

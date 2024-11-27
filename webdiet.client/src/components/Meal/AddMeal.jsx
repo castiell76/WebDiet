@@ -4,6 +4,7 @@ import Form from 'react-bootstrap/Form';
 import Button from 'react-bootstrap/Button';
 import Container from 'react-bootstrap/Container';
 
+
 // Custom Toggle
 const CustomToggle = React.forwardRef(({ children, onClick }, ref) => (
     <Button
@@ -49,7 +50,7 @@ const CustomMenu = React.forwardRef(
 );
 CustomMenu.displayName = 'CustomMenu';
 
-export default function AddMeal() {
+export default function AddMeal({ showToast}) {
     const [formData, setFormData] = useState({
         name: "",
         description: "",
@@ -72,7 +73,7 @@ export default function AddMeal() {
     const addIngredient = (ingredient) => {
         setFormData((prevData) => ({
             ...prevData,
-            ingredients: [...prevData.ingredients, { ...ingredient, amount: 0 }],
+            ingredients: [...prevData.ingredients, { ...ingredient, quantity: 0 }],
         }));
     };
 
@@ -85,14 +86,17 @@ export default function AddMeal() {
     };
 
     // Obs³uga zmiany iloœci sk³adnika
-    const updateIngredientAmount = (id, amount) => {
+    const updateIngredientQuantity = (id, quantity) => {
         setFormData((prevData) => ({
             ...prevData,
             ingredients: prevData.ingredients.map((ingredient) =>
-                ingredient.id === id ? { ...ingredient, amount } : ingredient
+                ingredient.id === id ? { ...ingredient, quantity } : ingredient
             ),
         }));
     };
+
+
+
 
     // Obs³uga przesy³ania danych
     const handleSubmit = async (e) => {
@@ -106,9 +110,13 @@ export default function AddMeal() {
                 },
                 body: JSON.stringify(formData),
             });
+
             console.log("FormData:", formData);
+
             if (response.ok) {
-                alert("Meal has been added!");
+                showToast("Meal has been added!");
+                /*setToastVisible(true);*/
+
                 setFormData({
                     name: "",
                     description: "",
@@ -117,11 +125,12 @@ export default function AddMeal() {
             } else {
                 const errorData = await response.json();
                 console.error("Server error:", errorData);
-                alert("Error occurred.");
+                showToast("Error occurred while adding the meal.");
+
             }
         } catch (error) {
-            console.error("Error occurred:", error.response,   error);
-            alert("Error connecting with server.");
+            console.error("Error occurred:", error.response, error);
+            showToast("Error connecting with server.");
         }
     };
 
@@ -175,9 +184,9 @@ export default function AddMeal() {
                             <span>{ingredient.name}</span>
                             <input
                                 type="number"
-                                value={ingredient.amount}
+                                value={ingredient.quantity}
                                 onChange={(e) =>
-                                    updateIngredientAmount(ingredient.id, parseFloat(e.target.value) || 0)
+                                    updateIngredientQuantity(ingredient.id, parseFloat(e.target.value) || 0)
                                 }
                             />
                             <button type="button" onClick={() => removeIngredient(ingredient.id)}>

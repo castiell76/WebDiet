@@ -69,23 +69,26 @@ namespace WebDiet.Server.Services
 
         public int Create(DishDto dto)
         {
-            //TODO CALCULATE NUTRITION VALUES
-
-         
             var dish = new Dish
             {
                 Name = dto.Name,
                 Description = dto.Description,
                 DishIngredients = dto.Ingredients.Select(ingredient => new DishIngredient
                 {
-                    IngredientId = ingredient.Id
+                    IngredientId = ingredient.Id,
+                    Quantity = ingredient.Quantity,
+                    
                 }).ToList(),
 
             };
+
+            //TODO CALCULATE NUTRITION VALUES
             dish.KCal = 0;
             dish.Protein = 1;
             dish.Fat = 2;
             dish.Carbo = 3;
+            
+            //TODO ASSIGN ALLERGENS FROM INGREDIENTS
             //dish.DishAllergens = null;
             //var dish = _mapper.Map<Dish>(dto);
             _context.Dishes.Add(dish);

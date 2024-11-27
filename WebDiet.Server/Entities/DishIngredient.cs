@@ -8,6 +8,6 @@
         public int IngredientId { get; set; }
         public Ingredient Ingredient { get; set; }
 
-        public double Quantity { get; set; }
+        public double? Quantity { get; set; }
     }
 }
