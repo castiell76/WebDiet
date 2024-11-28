@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from "react";
 import Table from 'react-bootstrap/Table';
-import { Link } from 'react-router-dom';
-
+import { useNavigate } from 'react-router-dom';
 export default function MealsList() {
 
     const [meals, setMeals] = useState([]);
+    const navigate = useNavigate();
 
     useEffect(() => {
 
@@ -25,7 +25,12 @@ export default function MealsList() {
     }, []);
 
     return (
-        <Table striped bordered hover>
+        <Table
+            striped
+            bordered
+            hover
+            className ="m-3"
+        >
             <thead>
                 <tr>
                     <th>Name</th>
@@ -37,10 +42,12 @@ export default function MealsList() {
             </thead>
             <tbody>
                 {meals.map((meal, index) => (
-                    <tr key={index}>
-                        <td>
-                            <Link to={`/meal/${meal.id}`}>{meal.name}</Link>
-                        </td>
+                    <tr
+                        key={index}
+                        onClick={() => navigate(`/meal/${meal.id}`)}
+                        style={{ cursor: 'pointer' }}
+                    >
+                        <td>{meal.name}</td>
                         <td>{meal.kcal}</td>
                         <td>{meal.protein}</td>
                         <td>{meal.carbo}</td>
