@@ -95,9 +95,16 @@ namespace WebDiet.Server.Services
                 dish.Protein = dish.Protein + (ingredientdish.Quantity * ingredient.Protein / 100);
                 dish.Carbo = dish.Carbo + (ingredientdish.Quantity * ingredient.Carbo / 100);
                 dish.Fat = dish.Fat + (ingredientdish.Quantity * ingredient.Fat / 100);
+                foreach(var ingredientAllergen in ingredient.IngredientAllergens)
+                {
+                    var allergen = _context.Allergens.Where(a=>a.Id == ingredientAllergen.AllergenId).FirstOrDefault();
+                    dish.DishAllergens.Add(new DishAllergen
+                    {
+                        DishId =dish.Id,
+                        AllergenId = allergen.Id,
+                    });
+                }
             }
-
-            //TODO ASSIGN ALLERGENS FROM INGREDIENTS
             _context.Dishes.Add(dish);
 
             _context.SaveChanges();

@@ -45,13 +45,25 @@ namespace WebDiet.Server.Services
         }
         public IngredientDto GetById(int id)
         {
-            var ingredient = _context.Ingredients.FirstOrDefault(i => i.Id == id);
-            var ingredientDto = _mapper.Map<IngredientDto>(ingredient);
+            var ingredient = _context.Ingredients
+                .Include(i => i.IngredientAllergens)
+                .ThenInclude(ia => ia.Allergen)
+                .FirstOrDefault(i => i.Id == id);
+
             if (ingredient == null)
             {
                 throw new NotFoundException("Ingredient not found");
             }
-            
+
+            var ingredientDto = _mapper.Map<IngredientDto>(ingredient);
+            ingredientDto.Allergens = ingredient.IngredientAllergens
+                .Select(ia => new AllergenDto
+                {
+                    Id = ia.Allergen.Id,
+                    Name = ia.Allergen.Name
+                })
+                .ToList();
+
             return ingredientDto;
         }
 
@@ -65,6 +77,19 @@ namespace WebDiet.Server.Services
         public int Create(IngredientDto dto)
         {
            var ingredient = _mapper.Map<Ingredient>(dto);
+            var allergens = dto.Allergens.ToList();
+
+            foreach(var allergen in allergens)
+            {
+                var item = new IngredientAllergen
+                {
+                    IngredientId = ingredient.Id,
+                    AllergenId = allergen.Id,
+                };
+                ingredient.IngredientAllergens.Add(item);
+                
+            }
+           
             _context.Ingredients.Add(ingredient);
 
             //DLA MENU

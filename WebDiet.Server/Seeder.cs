@@ -32,6 +32,11 @@ namespace WebDiet.Server
                     _context.Dishes.AddRange(GetDishes());
                     _context.SaveChanges();
                 }
+                if (!_context.Allergens.Any())
+                {
+                    _context.Allergens.AddRange(GetAllergens());
+                    _context.SaveChanges();
+                }
             }
         }
 
@@ -95,6 +100,28 @@ namespace WebDiet.Server
 
             };
         }
+        private IEnumerable<Allergen> GetAllergens()
+        {
+            return new List<Allergen>()
+            {
+                new Allergen()
+                {
+                    Name = "Orzech",
+                },
+                new Allergen()
+                {
+                    Name = "Gluten",
+                },
+                new Allergen()
+                {
+                    Name = "Laktoza",
+                },
+                 new Allergen()
+                {
+                    Name = "Mięso",
+                }
 
+            };
+        }
     }
 }

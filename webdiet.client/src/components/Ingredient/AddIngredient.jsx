@@ -1,6 +1,51 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Form, Button, Container } from 'react-bootstrap';
+import Dropdown from 'react-bootstrap/Dropdown';
 
+// Custom Toggle
+const CustomToggle = React.forwardRef(({ children, onClick }, ref) => (
+    <Button
+        ref={ref}
+        onClick={(e) => {
+            e.preventDefault();
+            onClick(e);
+        }}
+    >
+        {children} &#x25bc;
+    </Button>
+));
+CustomToggle.displayName = 'CustomToggle';
+
+// Custom Menu
+const CustomMenu = React.forwardRef(
+    ({ children, style, className, 'aria-labelledby': labeledBy }, ref) => {
+        const [value, setValue] = useState('');
+
+        return (
+            <div
+                ref={ref}
+                style={style}
+                className={className}
+                aria-labelledby={labeledBy}
+            >
+                <Form.Control
+                    autoFocus
+                    className="mx-3 my-2 w-auto"
+                    placeholder="Type to filter..."
+                    onChange={(e) => setValue(e.target.value)}
+                    value={value}
+                />
+                <ul className="list-unstyled px-2">
+                    {React.Children.toArray(children).filter(
+                        (child) =>
+                            !value || child.props.children.toLowerCase().includes(value.toLowerCase())
+                    )}
+                </ul>
+            </div>
+        );
+    }
+);
+CustomMenu.displayName = 'CustomMenu';
 export default function AddIngredient() {
     // Obs³uga formularza
     const [formData, setFormData] = useState({
@@ -10,7 +55,23 @@ export default function AddIngredient() {
         protein: '',
         carbo: '',
         fat: '',
+        allergens:[],
     });
+    const payload = {
+        ...formData,
+        allergens: formData.allergens.map(a => a.id),
+    };
+    const [allergens, setAllergens] = useState([]);
+
+    // Pobieranie sk³adników z API
+    useEffect(() => {
+        fetch("/api/ingredients/Allergen")
+            .then((response) => response.json())
+            .then((data) => {
+                setAllergens(data);
+            })
+            .catch((error) => console.error("Error:", error));
+    }, []);
 
     // Obs³uga zmian w polach formularza
     const handleChange = (e) => {
@@ -18,6 +79,21 @@ export default function AddIngredient() {
         setFormData({ ...formData, [name]: value });
     };
 
+    // Dodawanie sk³adnika
+    const addAllergen = (allergen) => {
+        setFormData((prevData) => ({
+            ...prevData,
+            allergens: [...prevData.allergens, { ...allergen }],
+        }));
+    };
+
+    // Usuwanie sk³adnika
+    const removeAllergen = (id) => {
+        setFormData((prevData) => ({
+            ...prevData,
+            allergens: prevData.allergens.filter((allergen) => allergen.id !== id),
+        }));
+    };
     // Obs³uga przesy³ania danych
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -33,6 +109,8 @@ export default function AddIngredient() {
 
             if (response.ok) {
                 alert('Sk³adnik zosta³ dodany!');
+                console.log("Fetched allergens:", allergens);
+                console.log("FormData allergens:", formData.allergens);
                 setFormData({
                     name: '',
                     description: '',
@@ -114,6 +192,36 @@ export default function AddIngredient() {
                         onChange={handleChange}
                     />
                 </Form.Group>
+                <Form.Group className="mb-3" controlId="addIngredient.allergens">
+                    <Form.Label>Details</Form.Label>
+                    <Dropdown>
+                        <Dropdown.Toggle as={CustomToggle} id="dropdown-custom-components">
+                            Select Details
+                        </Dropdown.Toggle>
+
+                        <Dropdown.Menu as={CustomMenu}>
+                            {allergens.map((allergen) => (
+                                <Dropdown.Item
+                                    key={allergen.id}
+                                    onClick={() => addAllergen(allergen)}
+                                >
+                                    {allergen.name}
+                                </Dropdown.Item>
+                            ))}
+                        </Dropdown.Menu>
+                    </Dropdown>
+                </Form.Group>
+                <div>
+                    <h5>Details</h5>
+                    {formData.allergens.map((allergen, index) => (
+                        <div key={index} style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                            <span>{allergen.name}</span>
+                            <button type="button" onClick={() => removeAllergen(allergen.id)}>
+                                Remove
+                            </button>
+                        </div>
+                    ))}
+                </div>
                 <Button variant="primary" type="submit">
                     Dodaj sk³adnik
                 </Button>
