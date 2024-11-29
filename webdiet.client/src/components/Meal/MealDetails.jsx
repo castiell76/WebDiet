@@ -38,6 +38,14 @@ export default function MealDetails() {
                     </li>
                 ))}
             </ul>
+            <h2>Allergens:</h2>
+            <ul>
+                {meal.allergens.map((allergen) => (
+                    <li key={allergen.id}>
+                        {allergen}
+                    </li>
+                ))}
+            </ul>
         </div>
     );
 }

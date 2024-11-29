@@ -76,24 +76,22 @@ namespace WebDiet.Server.Services
 
         public int Create(IngredientDto dto)
         {
-           var ingredient = _mapper.Map<Ingredient>(dto);
-            var allergens = dto.Allergens.ToList();
+            var ingredient = _mapper.Map<Ingredient>(dto);
 
-            foreach(var allergen in allergens)
-            {
-                var item = new IngredientAllergen
-                {
-                    IngredientId = ingredient.Id,
-                    AllergenId = allergen.Id,
-                };
-                ingredient.IngredientAllergens.Add(item);
-                
-            }
-           
             _context.Ingredients.Add(ingredient);
 
-            //DLA MENU
-            //menu.userId = userId przekazanego w konstruktorze jako int userId
+            if (dto.Allergens != null && dto.Allergens.Any())
+            {
+                foreach (var allergen in dto.Allergens)
+                {
+                    var item = new IngredientAllergen
+                    {
+                        AllergenId = allergen.Id
+                    };
+                    ingredient.IngredientAllergens.Add(item);
+                }
+            }
+
             _context.SaveChanges();
             return ingredient.Id;
         }

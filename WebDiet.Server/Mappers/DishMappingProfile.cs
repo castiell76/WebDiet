@@ -21,6 +21,8 @@ namespace WebDiet.Server.Mappers
                       Fat = di.Ingredient.Fat,
                       Quantity = di.Quantity 
                   })))
+                 .ForMember(d => d.Allergens, opt => opt.MapFrom(src =>
+                    src.DishAllergens.Select(da => da.Allergen.Name)))
               .ReverseMap();
         }
     }

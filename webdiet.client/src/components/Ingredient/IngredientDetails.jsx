@@ -29,6 +29,16 @@ export default function IngredientDetails() {
             <p><strong>Protein:</strong> {ingredient.protein}</p>
             <p><strong>Carbo:</strong> {ingredient.carbo}</p>
             <p><strong>Fat:</strong> {ingredient.fat}</p>
+            <p><strong>Allergens:</strong></p>
+            {ingredient.allergens && ingredient.allergens.length > 0 ? (
+                <ul>
+                    {ingredient.allergens.map((allergen, index) => (
+                        <li key={allergen.id || index}>{allergen.name}</li>
+                    ))}
+                </ul>
+            ) : (
+                <p>No allergens</p>
+            )}
         </div>
     );
 }

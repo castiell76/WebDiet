@@ -48,8 +48,10 @@ namespace WebDiet.Server.Services
         public DishDto GetById(int id)
         {
             var dish = _context.Dishes
-                .Include(d => d.DishIngredients)
-                    .ThenInclude(di => di.Ingredient)
+                .Include(d => d.DishIngredients) 
+                    .ThenInclude(di => di.Ingredient) 
+                .Include(d => d.DishAllergens) 
+                    .ThenInclude(da => da.Allergen) 
                 .FirstOrDefault(d => d.Id == id);
 
             if (dish == null)
@@ -78,35 +80,49 @@ namespace WebDiet.Server.Services
                 {
                     IngredientId = ingredient.Id,
                     Quantity = ingredient.Quantity,
-                    
                 }).ToList(),
-
+                DishAllergens = new List<DishAllergen>(), 
+                KCal = 0,
+                Protein = 0,
+                Fat = 0,
+                Carbo = 0
             };
-            dish.KCal = 0;
-            dish.Protein = 0;
-            dish.Fat = 0;
-            dish.Carbo = 0;
 
 
-            foreach (var ingredientdish in dish.DishIngredients)
+            var ingredientIds = dish.DishIngredients.Select(di => di.IngredientId).ToList();
+            var ingredients = _context.Ingredients
+                .Include(i => i.IngredientAllergens)
+                    .ThenInclude(ia => ia.Allergen)
+                .Where(i => ingredientIds.Contains(i.Id))
+                .ToList();
+
+
+            var uniqueAllergenIds = new HashSet<int>();
+
+            foreach (var dishIngredient in dish.DishIngredients)
             {
-                var ingredient = _context.Ingredients.Where(i => i.Id == ingredientdish.IngredientId).FirstOrDefault();
-                dish.KCal = dish.KCal + (ingredientdish.Quantity * ingredient.KCal/100);
-                dish.Protein = dish.Protein + (ingredientdish.Quantity * ingredient.Protein / 100);
-                dish.Carbo = dish.Carbo + (ingredientdish.Quantity * ingredient.Carbo / 100);
-                dish.Fat = dish.Fat + (ingredientdish.Quantity * ingredient.Fat / 100);
-                foreach(var ingredientAllergen in ingredient.IngredientAllergens)
+                var ingredient = ingredients.First(i => i.Id == dishIngredient.IngredientId);
+
+
+                dish.KCal += (dishIngredient.Quantity * ingredient.KCal / 100);
+                dish.Protein += (dishIngredient.Quantity * ingredient.Protein / 100);
+                dish.Carbo += (dishIngredient.Quantity * ingredient.Carbo / 100);
+                dish.Fat += (dishIngredient.Quantity * ingredient.Fat / 100);
+
+
+                foreach (var ingredientAllergen in ingredient.IngredientAllergens)
                 {
-                    var allergen = _context.Allergens.Where(a=>a.Id == ingredientAllergen.AllergenId).FirstOrDefault();
-                    dish.DishAllergens.Add(new DishAllergen
+                    if (uniqueAllergenIds.Add(ingredientAllergen.AllergenId))
                     {
-                        DishId =dish.Id,
-                        AllergenId = allergen.Id,
-                    });
+                        dish.DishAllergens.Add(new DishAllergen
+                        {
+                            AllergenId = ingredientAllergen.AllergenId
+                        });
+                    }
                 }
             }
-            _context.Dishes.Add(dish);
 
+            _context.Dishes.Add(dish);
             _context.SaveChanges();
             return dish.Id;
         }
