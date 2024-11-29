@@ -9,7 +9,7 @@ namespace WebDiet.Server.Models
         public string? Description { get; set; }
         public List<IngredientDto> Ingredients { get; set; }
         public List<string>? Allergens { get; set; }
-        public double? KCal { get; set; }
+        public double? Kcal { get; set; }
         public double? Protein { get; set; }
         public double? Carbo { get; set; }
         public double? Fat { get; set; }

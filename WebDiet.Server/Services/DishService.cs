@@ -12,7 +12,6 @@ namespace WebDiet.Server.Services
         IEnumerable<DishDto> GetAll();
         int Create(DishDto dish);
         void Delete(int id);
-
         void Update(int id, DishDto dish);
     }
 
@@ -82,7 +81,7 @@ namespace WebDiet.Server.Services
                     Quantity = ingredient.Quantity,
                 }).ToList(),
                 DishAllergens = new List<DishAllergen>(), 
-                KCal = 0,
+                Kcal = 0,
                 Protein = 0,
                 Fat = 0,
                 Carbo = 0
@@ -104,7 +103,7 @@ namespace WebDiet.Server.Services
                 var ingredient = ingredients.First(i => i.Id == dishIngredient.IngredientId);
 
 
-                dish.KCal += (dishIngredient.Quantity * ingredient.KCal / 100);
+                dish.Kcal += (dishIngredient.Quantity * ingredient.KCal / 100);
                 dish.Protein += (dishIngredient.Quantity * ingredient.Protein / 100);
                 dish.Carbo += (dishIngredient.Quantity * ingredient.Carbo / 100);
                 dish.Fat += (dishIngredient.Quantity * ingredient.Fat / 100);
