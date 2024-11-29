@@ -11,6 +11,7 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import './App.css';
 import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
 import ToastCustom from "./components/Commons/ToastCustom";
+import LoginForm from "./components/Account/Login";
 
 function App() {
     const [toastVisible, setToastVisible] = useState(false);
@@ -23,7 +24,6 @@ function App() {
 
     return (
         <Router>
-
             <NavbarBasic />
             <ToastCustom
                 text={toastText}
@@ -69,6 +69,11 @@ function AnimatedApp({ showToast }) {
                 <Route path="/meals/" element={
                     <PageTransition>
                         <MealsList showToast={showToast} />
+                    </PageTransition>}
+                />
+                <Route path="/account/login" element={
+                    <PageTransition>
+                        <LoginForm showToast={showToast} />
                     </PageTransition>}
                 />
             </Routes>

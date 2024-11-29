@@ -32,7 +32,7 @@ function NavbarBasic() {
                         </NavDropdown>
                     </Nav>
                     <Nav>
-                        <Nav.Link href="#deets">Account?</Nav.Link>
+                        <Nav.Link href="/account/login">Sign in</Nav.Link>
                         <Nav.Link eventKey={2} href="#memes">
                             Dank memes
                         </Nav.Link>
