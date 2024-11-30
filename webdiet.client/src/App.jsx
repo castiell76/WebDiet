@@ -11,7 +11,8 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import './App.css';
 import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
 import ToastCustom from "./components/Commons/ToastCustom";
-import LoginForm from "./components/Account/Login";
+import Login from "./components/Account/Login";
+
 
 function App() {
     const [toastVisible, setToastVisible] = useState(false);
@@ -23,15 +24,17 @@ function App() {
     };
 
     return (
-        <Router>
-            <NavbarBasic />
-            <ToastCustom
-                text={toastText}
-                show={toastVisible}
-                onClose={() => setToastVisible(false)}
-            />
-            <AnimatedApp showToast={showToast} />
-        </Router>
+            <Router>
+                <NavbarBasic />
+                <ToastCustom
+                    text={toastText}
+                    show={toastVisible}
+                    onClose={() => setToastVisible(false)}
+                />
+                <AnimatedApp showToast={showToast} />
+            </Router>
+
+       
     );
 }
 
@@ -39,45 +42,48 @@ function AnimatedApp({ showToast }) {
     const location = useLocation();
 
     return (
-        <AnimatePresence>
-            <Routes location={location} key={location.pathname}>
-                <Route path="/ingredients" element={
-                    <PageTransition>
-                        <IngredientsList showToast={showToast} />
-                    </PageTransition>}
+
+            <AnimatePresence>
+                <Routes location={location} key={location.pathname}>
+                    <Route path="/ingredients" element={
+                        <PageTransition>
+                            <IngredientsList showToast={showToast} />
+                        </PageTransition>}
+                    />
+                    <Route path="/ingredients/add" element={
+                        <PageTransition>
+                            <AddIngredient showToast={showToast} />
+                        </PageTransition>}
+                    />
+                    <Route path="/ingredient/:id" element={
+                        <PageTransition>
+                            <IngredientDetails showToast={showToast} />
+                        </PageTransition>}
+                    />
+                    <Route path="/meal/:id" element={
+                        <PageTransition>
+                            <MealDetails showToast={showToast} />
+                        </PageTransition>}
+                    />
+                    <Route path="/meals/add" element={
+                        <PageTransition>
+                            <AddMeal showToast={showToast} />
+                        </PageTransition>}
+                    />
+                    <Route path="/meals/" element={
+                        <PageTransition>
+                            <MealsList showToast={showToast} />
+                        </PageTransition>}
+                    />
+                    <Route path="/account/login" element={
+                        <PageTransition>
+                            <Login showToast={showToast} />
+                        </PageTransition>}
                 />
-                <Route path="/ingredients/add" element={
-                    <PageTransition>
-                        <AddIngredient showToast={showToast} />
-                    </PageTransition>}
-                />
-                <Route path="/ingredient/:id" element={
-                    <PageTransition>
-                        <IngredientDetails showToast={showToast} />
-                    </PageTransition>}
-                />
-                <Route path="/meal/:id" element={
-                    <PageTransition>
-                        <MealDetails showToast={showToast} />
-                    </PageTransition>}
-                />
-                <Route path="/meals/add" element={
-                    <PageTransition>
-                        <AddMeal showToast={showToast} />
-                    </PageTransition>}
-                />
-                <Route path="/meals/" element={
-                    <PageTransition>
-                        <MealsList showToast={showToast} />
-                    </PageTransition>}
-                />
-                <Route path="/account/login" element={
-                    <PageTransition>
-                        <LoginForm showToast={showToast} />
-                    </PageTransition>}
-                />
-            </Routes>
-        </AnimatePresence>
+
+                </Routes>
+            </AnimatePresence>
+       
     );
 }
 
