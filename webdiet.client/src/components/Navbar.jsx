@@ -50,7 +50,8 @@ function NavbarBasic() {
                                         {user.name || "Your Account"}
                                     </Dropdown.Toggle>
                                     <Dropdown.Menu>
-                                        <Dropdown.Item as={Link} to="/profile">Profile</Dropdown.Item>
+                                            <Dropdown.Item as={Link} to="/menus">Your Diet</Dropdown.Item>
+                                            <Dropdown.Item as={Link} to="/menu/add">Dodaj Menu</Dropdown.Item>
                                         <Dropdown.Item as={Link} to="/settings">Settings</Dropdown.Item>
                                         <Dropdown.Divider />
                                         <Dropdown.Item onClick={logout}>Logout</Dropdown.Item>

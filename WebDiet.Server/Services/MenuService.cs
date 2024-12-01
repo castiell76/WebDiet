@@ -31,7 +31,7 @@ namespace WebDiet.Server.Services
             if (menu == null) throw new NotFoundException("Menu not found");
 
             menu.Description = updatedMenu.Description ?? menu.Description;
-            menu.KCal = updatedMenu.KCal ?? menu.KCal;
+            menu.Kcal = updatedMenu.Kcal ?? menu.Kcal;
             menu.Protein = updatedMenu.Protein ?? menu.Protein;
             menu.Carbo = updatedMenu.Carbo ?? menu.Carbo;
             menu.Fat = updatedMenu.Fat ?? menu.Fat;

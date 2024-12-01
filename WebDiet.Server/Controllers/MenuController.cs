@@ -9,7 +9,7 @@ namespace WebDiet.Server.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    [Authorize]
+    //[Authorize]
     public class MenuController : ControllerBase
     {
         private readonly IMenuService _service;
@@ -37,6 +37,10 @@ namespace WebDiet.Server.Controllers
         [HttpPost]
         public ActionResult Create([FromBody] MenuDto menuDto)
         {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
             var userId = Int32.Parse(User.FindFirst(c=> c.Type == ClaimTypes.NameIdentifier).Value);
 
             _service.Create(menuDto, userId); //, userId
@@ -60,13 +64,5 @@ namespace WebDiet.Server.Controllers
             return Ok(menu);
         }
 
-        //public ActionResult Test()
-        //{
-        //    var userId = Int32.Parse(User.FindFirst(c => c.Type == ClaimTypes.NameIdentifier).Value);
-
-        //    _service.Create(menuDto, userId); //, userId
-
-        //    return Created($"/api/menus/{menuDto.Id}", null);
-        //}
     }
 }

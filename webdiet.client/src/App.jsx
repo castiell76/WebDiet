@@ -13,7 +13,8 @@ import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-route
 import ToastCustom from "./components/Commons/ToastCustom";
 import Login from "./components/Account/Login";
 import { useAuth } from  "./contexts/AuthContext"
-
+import AddMenu from "./components/Menu/AddMenu";
+import MenusList from "./components/Menu/MenusList";
 function App() {
 
     const { toastText, toastVisible, showToast, toastVariant } = useAuth();
@@ -75,6 +76,16 @@ function AnimatedApp({ showToast }) {
                         <PageTransition>
                             <Login showToast={showToast} />
                         </PageTransition>}
+                />
+                <Route path="/menu/add" element={
+                    <PageTransition>
+                        <AddMenu showToast={showToast} />
+                    </PageTransition>}
+                />
+                <Route path="/menus" element={
+                    <PageTransition>
+                        <MenusList showToast={showToast} />
+                    </PageTransition>}
                 />
 
                 </Routes>
