@@ -114,8 +114,7 @@ export default function AddMeal({ showToast}) {
             console.log("FormData:", formData);
 
             if (response.ok) {
-                showToast("Meal has been added!");
-                /*setToastVisible(true);*/
+                showToast({ message: "Meal has been added!", variant: 'success' });
 
                 setFormData({
                     name: "",

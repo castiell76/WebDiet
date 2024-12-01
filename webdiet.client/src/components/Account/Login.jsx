@@ -3,7 +3,7 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
-import { jwtDecode } from "jwt-decode";  // Correct import for jwt-decode
+import { jwtDecode } from "jwt-decode"; 
 
 const Login = () => {
     const { login } = useAuth();
@@ -54,15 +54,13 @@ const Login = () => {
                     email: formData.email,
                     password: formData.password
                 });
-                console.log(response.data); 
                 const token = response.data;
-                console.log('Received token:', token);
-                // Ensure the token is a string before attempting to decode it
+
                 if (typeof token !== 'string') {
                     throw new Error('Invalid token');
                 }
 
-                // Decode the token to extract user data
+
                 const decodedUser = jwtDecode(token);
 
                 // Calling the login function to store the user and token in context

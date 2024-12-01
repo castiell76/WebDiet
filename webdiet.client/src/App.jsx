@@ -12,16 +12,11 @@ import './App.css';
 import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
 import ToastCustom from "./components/Commons/ToastCustom";
 import Login from "./components/Account/Login";
-
+import { useAuth } from  "./contexts/AuthContext"
 
 function App() {
-    const [toastVisible, setToastVisible] = useState(false);
-    const [toastText, setToastText] = useState("");
 
-    const showToast = (text) => {
-        setToastText(text);
-        setToastVisible(true);
-    };
+    const { toastText, toastVisible, showToast, toastVariant } = useAuth();
 
     return (
             <Router>
@@ -29,7 +24,8 @@ function App() {
                 <ToastCustom
                     text={toastText}
                     show={toastVisible}
-                    onClose={() => setToastVisible(false)}
+                onClose={() => showToast('')}
+                variant={toastVariant}
                 />
                 <AnimatedApp showToast={showToast} />
             </Router>
