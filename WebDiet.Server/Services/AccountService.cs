@@ -64,6 +64,7 @@ namespace WebDiet.Server.Services
             var claims = new List<Claim>()
             {
                 new Claim(ClaimTypes.NameIdentifier, user.UserId.ToString()),
+                new Claim(ClaimTypes.Name, user.Username.ToString()),
                 new Claim(ClaimTypes.Role, $"{user.Role.Name}"),
             };
 

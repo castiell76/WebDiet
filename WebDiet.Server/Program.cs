@@ -15,6 +15,8 @@ using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using Microsoft.AspNetCore.Authorization;
 using WebDiet.Server.Authorization;
+using System.IdentityModel.Tokens.Jwt;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -26,20 +28,26 @@ builder.Host.UseNLog();
 var authenticationSettings = new AuthenticationSettings();
 builder.Configuration.GetSection("Authentication").Bind(authenticationSettings);
 builder.Services.AddSingleton(authenticationSettings);
-builder.Services.AddAuthentication(option =>
+builder.Services.AddAuthentication(options =>
 {
-option.DefaultAuthenticateScheme = "Bearer";
-option.DefaultScheme = "Bearer";
-option.DefaultChallengeScheme = "Bearer"; 
-}).AddJwtBearer(cfg =>
+    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+})
+.AddJwtBearer(cfg =>
 {
-    cfg.RequireHttpsMetadata = false;
-    cfg.SaveToken = true;
-    cfg.TokenValidationParameters = new Microsoft.IdentityModel.Tokens.TokenValidationParameters
+    JwtSecurityTokenHandler.DefaultInboundClaimTypeMap.Clear(); // Usuniêcie domyœlnego mapowania claimów
+    cfg.RequireHttpsMetadata = false; // Wy³¹czenie wymogu HTTPS (niezalecane na produkcji)
+    cfg.SaveToken = true; // Zapis tokena w `HttpContext`
+    cfg.TokenValidationParameters = new TokenValidationParameters
     {
-        ValidIssuer = authenticationSettings.JwtIssuer,
-        ValidAudience = authenticationSettings.JwtIssuer,
-        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(authenticationSettings.JwtKey))
+        ValidateIssuer = true, // Weryfikacja issuer
+        ValidateAudience = true, // Weryfikacja audience
+        ValidateLifetime = true, // Weryfikacja czasu wa¿noœci tokena
+        ValidateIssuerSigningKey = true, // Weryfikacja klucza podpisuj¹cego token
+        ValidIssuer = authenticationSettings.JwtIssuer, // Oczekiwany issuer
+        ValidAudience = authenticationSettings.JwtIssuer, // Oczekiwana audience
+        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(authenticationSettings.JwtKey)) // Klucz podpisu
     };
 });
 

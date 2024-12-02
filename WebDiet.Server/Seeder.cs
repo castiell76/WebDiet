@@ -13,6 +13,7 @@ namespace WebDiet.Server
 
         public void Seed()
         {
+
             if (_context.Database.CanConnect())
             {
                 if (!_context.Ingredients.Any())

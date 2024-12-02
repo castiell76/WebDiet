@@ -105,15 +105,19 @@ export default function AddMenu({ showToast }) {
         e.preventDefault();
 
         try {
+            const token = localStorage.getItem("jwtToken");
+
             const response = await fetch("/api/menu", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
+                    "Authorization": `Bearer ${token}`
                 },
                 body: JSON.stringify(formData),
             });
 
-            console.log("FormData:", formData);
+            console.log("token ", token);
+
 
             if (response.ok) {
                 showToast({ message: "Menu has been added!", variant: 'success' });

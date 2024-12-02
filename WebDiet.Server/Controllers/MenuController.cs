@@ -41,7 +41,18 @@ namespace WebDiet.Server.Controllers
             {
                 return BadRequest(ModelState);
             }
-            var userId = Int32.Parse(User.FindFirst(c=> c.Type == ClaimTypes.NameIdentifier).Value);
+
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
+            foreach (var claim in User.Claims)
+            {
+                Console.WriteLine($"Claim Type: {claim.Type}, Value: {claim.Value}");
+            }
+            if (userIdClaim == null)
+            {
+                return Unauthorized("User ID not found in token.");
+            }
+
+            int userId = int.Parse(userIdClaim.Value);
 
             _service.Create(menuDto, userId); //, userId
 
