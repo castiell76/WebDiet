@@ -3,7 +3,7 @@ import Dropdown from 'react-bootstrap/Dropdown';
 import Form from 'react-bootstrap/Form';
 import Button from 'react-bootstrap/Button';
 import Container from 'react-bootstrap/Container';
-
+import Select from "react-select";
 
 // Custom Toggle
 const CustomToggle = React.forwardRef(({ children, onClick }, ref) => (
@@ -95,7 +95,36 @@ export default function AddMeal({ showToast}) {
         }));
     };
 
+    const [options, setOptions] = useState([]);
+    const [isLoading, setIsLoading] = useState(false);
 
+    const handleInputChange = async (inputValue) => {
+        if (!inputValue) return;
+
+        setIsLoading(true);
+        try {
+
+            const ingredients = await fetchIngredients(inputValue);
+            const formattedOptions = ingredients.map((ingredient) => ({
+                value: ingredient.id,
+                label: ingredient.name,
+            }));
+            setOptions(formattedOptions);
+        } catch (error) {
+            console.error("Error fetching ingredients:", error);
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    const handleChange = (selectedOption) => {
+
+        const ingredient = {
+            id: selectedOption.value,
+            name: selectedOption.label,
+        };
+        addIngredient(ingredient);
+    };
 
 
     // Obs³uga przesy³ania danych
@@ -157,25 +186,39 @@ export default function AddMeal({ showToast}) {
                         onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                     />
                 </Form.Group>
-                <Form.Group className="mb-3" controlId="mealIngredients">
-                    <Form.Label>Ingredients</Form.Label>
-                    <Dropdown>
-                        <Dropdown.Toggle as={CustomToggle} id="dropdown-custom-components">
-                            Select Ingredients
-                        </Dropdown.Toggle>
 
-                        <Dropdown.Menu as={CustomMenu}>
-                            {ingredients.map((ingredient) => (
-                                <Dropdown.Item
-                                    key={ingredient.id}
-                                    onClick={() => addIngredient(ingredient)}
-                                >
-                                    {ingredient.name}
-                                </Dropdown.Item>
-                            ))}
-                        </Dropdown.Menu>
-                    </Dropdown>
-                </Form.Group>
+                <div>
+                    <label htmlFor="ingredient-select">Ingredients</label>
+                    <Select
+                        id="ingredient-select"
+                        options={options}
+                        onInputChange={handleInputChange}
+                        onChange={handleChange}
+                        isLoading={isLoading}
+                        placeholder="Search ingredients..."
+                        noOptionsMessage={() => "No ingredients found"}
+                        isClearable
+                    />
+                </div>
+                {/*<Form.Group className="mb-3" controlId="mealIngredients">*/}
+                {/*    <Form.Label>Ingredients</Form.Label>*/}
+                {/*    <Dropdown>*/}
+                {/*        <Dropdown.Toggle as={CustomToggle} id="dropdown-custom-components">*/}
+                {/*            Select Ingredients*/}
+                {/*        </Dropdown.Toggle>*/}
+
+                {/*        <Dropdown.Menu as={CustomMenu}>*/}
+                {/*            {ingredients.map((ingredient) => (*/}
+                {/*                <Dropdown.Item*/}
+                {/*                    key={ingredient.id}*/}
+                {/*                    onClick={() => addIngredient(ingredient)}*/}
+                {/*                >*/}
+                {/*                    {ingredient.name}*/}
+                {/*                </Dropdown.Item>*/}
+                {/*            ))}*/}
+                {/*        </Dropdown.Menu>*/}
+                {/*    </Dropdown>*/}
+                {/*</Form.Group>*/}
                 <div>
                     <h5>Selected Ingredients</h5>
                     {formData.ingredients.map((ingredient, index) => (

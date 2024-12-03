@@ -70,6 +70,7 @@ export default function AddMenu({ showToast }) {
         Supper: "/assets/supper.jpg"
     };
     const [meals, setMeals] = useState([]);
+    const [selectedMeals, setSelectedMeals] = useState({});
 
 
     useEffect(() => {
@@ -115,8 +116,8 @@ export default function AddMenu({ showToast }) {
         setMealCount(selectedValue);
     };
 
-    const getMealTypes = (count) => {
-        switch (count) {
+    const getMealTypes = (mealCount) => {
+        switch (mealCount) {
             case 1:
                 return ["Breakfast", "Dinner", "Supper"];
             case 2:
@@ -127,9 +128,6 @@ export default function AddMenu({ showToast }) {
                 return [];
         }
     };
-
-    // Pobranie typów posi³ków na podstawie wybranej liczby
-    const mealTypes = getMealTypes(mealCount);
 
 
     // Obs³uga przesy³ania danych
@@ -172,6 +170,15 @@ export default function AddMenu({ showToast }) {
         }
     };
 
+    const handleMealSelect = (mealType, meal) => {
+        setSelectedMeals((prev) => ({
+            ...prev,
+            [mealType]: meal.id, 
+        }));
+    };
+
+    const mealTypes = getMealTypes(mealCount);
+
     return (
         <Container>
             <h1>Add Menu</h1>
@@ -210,55 +217,19 @@ export default function AddMenu({ showToast }) {
                     <option value="2">Four</option>
                     <option value="3">Five</option>
                 </Form.Select>
-                <div className="meal-cards d-flex justify-content-center align-items-center container py-4"
-                >
-                    {mealTypes.map((mealType, index) => (
+                <div className="meal-cards d-flex justify-content-center align-items-center container py-4">
+                    {mealTypes.map((mealType) => (
                         <MealCard
-                            className="me-3"
-                            key={index}
+                            key={mealType}
                             mealType={mealType}
                             description={`Description for ${mealType.toLowerCase()}`}
-                            imagePath={mealImages[mealType]}
+                            imagePath="/placeholder.jpg" // Placeholder lub obrazek dla ka¿dego posi³ku
+                            meals={meals} // Przeka¿ dostêpne posi³ki
+                            onMealSelect={(meal) => handleMealSelect(mealType, meal)} // Przeka¿ callback
                         />
                     ))}
                 </div>
-                {/*<Form.Group className="mb-3" controlId="addMenu.Meals">*/}
-                {/*    <Form.Label>Meals</Form.Label>*/}
-                {/*    <Dropdown>*/}
-                {/*        <Dropdown.Toggle as={CustomToggle} id="dropdown-custom-components">*/}
-                {/*            Select Meals*/}
-                {/*        </Dropdown.Toggle>*/}
 
-                {/*        <Dropdown.Menu as={CustomMenu}>*/}
-                {/*            {meals.map((meal) => (*/}
-                {/*                <Dropdown.Item*/}
-                {/*                    key={meal.id}*/}
-                {/*                    onClick={() => addMeal(meal)}*/}
-                {/*                >*/}
-                {/*                    {meal.name}*/}
-                {/*                </Dropdown.Item>*/}
-                {/*            ))}*/}
-                {/*        </Dropdown.Menu>*/}
-                {/*    </Dropdown>*/}
-                {/*</Form.Group>*/}
-                {/*<div>*/}
-                {/*    <h5>Selected Meals</h5>*/}
-                {/*    {formData.meals.map((meal, index) => (*/}
-                {/*        <div key={index} style={{ display: "flex", alignItems: "center", gap: "10px" }}>*/}
-                {/*            <span>{meal.name}</span>*/}
-                {/*            <input*/}
-                {/*                type="text"*/}
-                {/*                value={meal.type}*/}
-                {/*                onChange={(e) =>*/}
-                {/*                    updateMealType(meal.id, e.target.value || 0)*/}
-                {/*                }*/}
-                {/*            />*/}
-                {/*            <button type="button" onClick={() => removeMeal(meal.id)}>*/}
-                {/*                Remove*/}
-                {/*            </button>*/}
-                {/*        </div>*/}
-                {/*    ))}*/}
-                {/*</div>*/}
                 <Button type="submit" variant="primary" className="mt-3">
                     Add Menu
                 </Button>

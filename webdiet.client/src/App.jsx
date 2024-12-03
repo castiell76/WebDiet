@@ -15,6 +15,8 @@ import Login from "./components/Account/Login";
 import { useAuth } from  "./contexts/AuthContext"
 import AddMenu from "./components/Menu/AddMenu";
 import MenusList from "./components/Menu/MenusList";
+
+import MenuDetails from "./components/Menu/MenuDetails";
 function App() {
 
     const { toastText, toastVisible, showToast, toastVariant } = useAuth();
@@ -80,6 +82,11 @@ function AnimatedApp({ showToast }) {
                 <Route path="/menu/add" element={
                     <PageTransition>
                         <AddMenu showToast={showToast} />
+                    </PageTransition>}
+                />
+                <Route path="/menu/:id" element={
+                    <PageTransition>
+                        <MenuDetails showToast={showToast} />
                     </PageTransition>}
                 />
                 <Route path="/menus" element={
