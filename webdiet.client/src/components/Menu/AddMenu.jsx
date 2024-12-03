@@ -5,6 +5,7 @@ import Button from 'react-bootstrap/Button';
 import Container from 'react-bootstrap/Container';
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
+import MealCard from "../Meal/MealCard"
 
 // Custom Toggle
 const CustomToggle = React.forwardRef(({ children, onClick }, ref) => (
@@ -19,6 +20,7 @@ const CustomToggle = React.forwardRef(({ children, onClick }, ref) => (
     </Button>
 ));
 CustomToggle.displayName = 'CustomToggle';
+
 
 // Custom Menu
 const CustomMenu = React.forwardRef(
@@ -59,6 +61,14 @@ export default function AddMenu({ showToast }) {
         meals: [], 
     });
 
+
+    const mealImages = {
+        Breakfast: "/assets/breakfast.jpg",
+        Lunch: "/assets/lunch.jpg",
+        Dinner: "/assets/dinner.jpg",
+        Tea: "/assets/tea.jpg",
+        Supper: "/assets/supper.jpg"
+    };
     const [meals, setMeals] = useState([]);
 
 
@@ -97,7 +107,29 @@ export default function AddMenu({ showToast }) {
         }));
     };
 
+    const [mealCount, setMealCount] = useState(0);
 
+    // Funkcja do obs³ugi zmiany w formularzu
+    const handleSelectChange = (event) => {
+        const selectedValue = parseInt(event.target.value, 10); // Parsowanie do liczby
+        setMealCount(selectedValue);
+    };
+
+    const getMealTypes = (count) => {
+        switch (count) {
+            case 1:
+                return ["Breakfast", "Dinner", "Supper"];
+            case 2:
+                return ["Breakfast", "Lunch", "Dinner", "Supper"];
+            case 3:
+                return ["Breakfast", "Lunch", "Dinner", "Tea", "Supper"];
+            default:
+                return [];
+        }
+    };
+
+    // Pobranie typów posi³ków na podstawie wybranej liczby
+    const mealTypes = getMealTypes(mealCount);
 
 
     // Obs³uga przesy³ania danych
@@ -156,7 +188,7 @@ export default function AddMenu({ showToast }) {
                     <Form.Label>Description</Form.Label>
                     <Form.Control
                         type="text"
-                        placeholder="Menu description"
+                        placeholder="Menu description - optional"
                         value={formData.description}
                         name="description"
                         onChange={(e) => setFormData({ ...formData, description: e.target.value })}
@@ -172,43 +204,61 @@ export default function AddMenu({ showToast }) {
                         onChange={(e) => setFormData({ ...formData, kcal: parseFloat(e.target.value) || 0 })}
                     />
                 </Form.Group>
-                <Form.Group className="mb-3" controlId="addMenu.Meals">
-                    <Form.Label>Meals</Form.Label>
-                    <Dropdown>
-                        <Dropdown.Toggle as={CustomToggle} id="dropdown-custom-components">
-                            Select Meals
-                        </Dropdown.Toggle>
-
-                        <Dropdown.Menu as={CustomMenu}>
-                            {meals.map((meal) => (
-                                <Dropdown.Item
-                                    key={meal.id}
-                                    onClick={() => addMeal(meal)}
-                                >
-                                    {meal.name}
-                                </Dropdown.Item>
-                            ))}
-                        </Dropdown.Menu>
-                    </Dropdown>
-                </Form.Group>
-                <div>
-                    <h5>Selected Meals</h5>
-                    {formData.meals.map((meal, index) => (
-                        <div key={index} style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-                            <span>{meal.name}</span>
-                            <input
-                                type="text"
-                                value={meal.type}
-                                onChange={(e) =>
-                                    updateMealType(meal.id, e.target.value || 0)
-                                }
-                            />
-                            <button type="button" onClick={() => removeMeal(meal.id)}>
-                                Remove
-                            </button>
-                        </div>
+                <Form.Select className="mb-3" aria-label="Meals quantity" onChange={handleSelectChange}>
+                    <option>Choose meals quantity</option>
+                    <option value="1">Three</option>
+                    <option value="2">Four</option>
+                    <option value="3">Five</option>
+                </Form.Select>
+                <div className="meal-cards d-flex justify-content-center align-items-center container py-4"
+                >
+                    {mealTypes.map((mealType, index) => (
+                        <MealCard
+                            className="me-3"
+                            key={index}
+                            mealType={mealType}
+                            description={`Description for ${mealType.toLowerCase()}`}
+                            imagePath={mealImages[mealType]}
+                        />
                     ))}
                 </div>
+                {/*<Form.Group className="mb-3" controlId="addMenu.Meals">*/}
+                {/*    <Form.Label>Meals</Form.Label>*/}
+                {/*    <Dropdown>*/}
+                {/*        <Dropdown.Toggle as={CustomToggle} id="dropdown-custom-components">*/}
+                {/*            Select Meals*/}
+                {/*        </Dropdown.Toggle>*/}
+
+                {/*        <Dropdown.Menu as={CustomMenu}>*/}
+                {/*            {meals.map((meal) => (*/}
+                {/*                <Dropdown.Item*/}
+                {/*                    key={meal.id}*/}
+                {/*                    onClick={() => addMeal(meal)}*/}
+                {/*                >*/}
+                {/*                    {meal.name}*/}
+                {/*                </Dropdown.Item>*/}
+                {/*            ))}*/}
+                {/*        </Dropdown.Menu>*/}
+                {/*    </Dropdown>*/}
+                {/*</Form.Group>*/}
+                {/*<div>*/}
+                {/*    <h5>Selected Meals</h5>*/}
+                {/*    {formData.meals.map((meal, index) => (*/}
+                {/*        <div key={index} style={{ display: "flex", alignItems: "center", gap: "10px" }}>*/}
+                {/*            <span>{meal.name}</span>*/}
+                {/*            <input*/}
+                {/*                type="text"*/}
+                {/*                value={meal.type}*/}
+                {/*                onChange={(e) =>*/}
+                {/*                    updateMealType(meal.id, e.target.value || 0)*/}
+                {/*                }*/}
+                {/*            />*/}
+                {/*            <button type="button" onClick={() => removeMeal(meal.id)}>*/}
+                {/*                Remove*/}
+                {/*            </button>*/}
+                {/*        </div>*/}
+                {/*    ))}*/}
+                {/*</div>*/}
                 <Button type="submit" variant="primary" className="mt-3">
                     Add Menu
                 </Button>
