@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Microsoft.EntityFrameworkCore;
 using WebDiet.Server.Entities;
 using WebDiet.Server.Exceptions;
 using WebDiet.Server.Models;
@@ -61,11 +62,59 @@ namespace WebDiet.Server.Services
 
         public int Create(MenuDto dto, int userId)
         {
+            // Mapowanie MenuDto do encji Menu
             var menu = _mapper.Map<Menu>(dto);
             menu.UserId = userId;
+
+            // Mapowanie Dishes do Menu (jeśli zawiera je DTO)
+            foreach (var dishDto in dto.Dishes)
+            {
+                var dish = _context.Dishes
+                    .Include(d => d.DishIngredients)  
+                    .ThenInclude(di => di.Ingredient) 
+                    .Include(d => d.DishAllergens)   
+                    .ThenInclude(da => da.Allergen)  
+                    .FirstOrDefault(d => d.Id == dishDto.Id);
+
+                if (dish != null)
+                {
+                    // Mapowanie DishesMenu (powiązanie dania z menu)
+                    var dishMenu = new DishMenu
+                    {
+                        Dish = dish,
+                        Menu = menu,
+                        Type = "some type"  // Możesz przypisać tutaj typ dania, jeśli jest potrzebny
+                    };
+                    menu.DishesMenu.Add(dishMenu);
+
+                    // Możesz również zmapować składniki (DishIngredients) i alergeny (DishAllergens),
+                    // ale to może być część powiązania w samym DTO, jeśli użytkownik przekazuje je w `DishDto`
+                    foreach (var ingredientDto in dishDto.Ingredients)
+                    {
+                        var ingredient = _context.Ingredients
+                            .FirstOrDefault(i => i.Id == ingredientDto.Id);
+
+                        if (ingredient != null)
+                        {
+                            var dishIngredient = new DishIngredient
+                            {
+                                Dish = dish,
+                                Ingredient = ingredient,
+                                Quantity = ingredientDto.Quantity
+                            };
+                            _context.DishIngredients.Add(dishIngredient);  // Dodaj do kontekstu
+                        }
+                    }
+                }
+            }
+
+            // Dodanie nowego menu do kontekstu
             _context.Menus.Add(menu);
+
+            // Zapisanie zmian w bazie danych
             _context.SaveChanges();
 
+            // Zwrócenie ID nowo utworzonego menu
             return menu.Id;
         }
 

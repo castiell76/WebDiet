@@ -10,7 +10,7 @@
         public double? Carbo { get; set; }
         public double? Fat { get; set; }
         public DateTime Date { get; set; }
-        public ICollection<DishMenu>? DishesMenu { get; set; }
+        public ICollection<DishMenu>? DishesMenu { get; set; } = new List<DishMenu>();
         public int UserId { get; set; }
         public User User { get; set; }
     }

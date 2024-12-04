@@ -187,38 +187,38 @@ export default function AddMeal({ showToast}) {
                     />
                 </Form.Group>
 
-                <div>
-                    <label htmlFor="ingredient-select">Ingredients</label>
-                    <Select
-                        id="ingredient-select"
-                        options={options}
-                        onInputChange={handleInputChange}
-                        onChange={handleChange}
-                        isLoading={isLoading}
-                        placeholder="Search ingredients..."
-                        noOptionsMessage={() => "No ingredients found"}
-                        isClearable
-                    />
-                </div>
-                {/*<Form.Group className="mb-3" controlId="mealIngredients">*/}
-                {/*    <Form.Label>Ingredients</Form.Label>*/}
-                {/*    <Dropdown>*/}
-                {/*        <Dropdown.Toggle as={CustomToggle} id="dropdown-custom-components">*/}
-                {/*            Select Ingredients*/}
-                {/*        </Dropdown.Toggle>*/}
+                {/*<div>*/}
+                {/*    <label htmlFor="ingredient-select">Ingredients</label>*/}
+                {/*    <Select*/}
+                {/*        id="ingredient-select"*/}
+                {/*        options={options}*/}
+                {/*        onInputChange={handleInputChange}*/}
+                {/*        onChange={handleChange}*/}
+                {/*        isLoading={isLoading}*/}
+                {/*        placeholder="Search ingredients..."*/}
+                {/*        noOptionsMessage={() => "No ingredients found"}*/}
+                {/*        isClearable*/}
+                {/*    />*/}
+                {/*</div>*/}
+                <Form.Group className="mb-3" controlId="mealIngredients">
+                    <Form.Label>Ingredients</Form.Label>
+                    <Dropdown>
+                        <Dropdown.Toggle as={CustomToggle} id="dropdown-custom-components">
+                            Select Ingredients
+                        </Dropdown.Toggle>
 
-                {/*        <Dropdown.Menu as={CustomMenu}>*/}
-                {/*            {ingredients.map((ingredient) => (*/}
-                {/*                <Dropdown.Item*/}
-                {/*                    key={ingredient.id}*/}
-                {/*                    onClick={() => addIngredient(ingredient)}*/}
-                {/*                >*/}
-                {/*                    {ingredient.name}*/}
-                {/*                </Dropdown.Item>*/}
-                {/*            ))}*/}
-                {/*        </Dropdown.Menu>*/}
-                {/*    </Dropdown>*/}
-                {/*</Form.Group>*/}
+                        <Dropdown.Menu as={CustomMenu}>
+                            {ingredients.map((ingredient) => (
+                                <Dropdown.Item
+                                    key={ingredient.id}
+                                    onClick={() => addIngredient(ingredient)}
+                                >
+                                    {ingredient.name}
+                                </Dropdown.Item>
+                            ))}
+                        </Dropdown.Menu>
+                    </Dropdown>
+                </Form.Group>
                 <div>
                     <h5>Selected Ingredients</h5>
                     {formData.ingredients.map((ingredient, index) => (

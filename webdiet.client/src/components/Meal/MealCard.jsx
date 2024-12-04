@@ -1,43 +1,39 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Button, Card, Modal, Form, Dropdown } from 'react-bootstrap';
 
-
-function MealCard({ mealType, description, imagePath }) {
+function MealCard({ mealType, description, imagePath, meals, onMealSelect }) {
     const [showModal, setShowModal] = useState(false);
+    const [searchValue, setSearchValue] = useState('');
     const [selectedMeal, setSelectedMeal] = useState(null);
 
-    // Funkcja do otwierania/ zamykania modala
+    // Funkcje otwierania/zamykania modala
     const handleShow = () => setShowModal(true);
     const handleClose = () => setShowModal(false);
 
-    // Funkcja do dodawania posi³ku do karty
+    // Dodanie wybranego posi³ku
     const addMeal = (meal) => {
+        console.log("Meal object before adding:", meal); // SprawdŸ strukturê meal
         setSelectedMeal(meal);
-        setShowModal(false); // Zamknij modal po przypisaniu posi³ku
+        onMealSelect(meal); // Callback do rodzica
+        setShowModal(false);
     };
-    const [meals, setMeals] = useState([]);
 
-
-    useEffect(() => {
-        fetch("/api/dish")
-            .then((response) => response.json())
-            .then((data) => {
-                setMeals(data);
-            })
-            .catch((error) => console.error("Error:", error));
-    }, []);
+    // Filtracja posi³ków na podstawie wprowadzonego tekstu
+    const filteredMeals = meals.filter((meal) =>
+        meal.name.toLowerCase().includes(searchValue.toLowerCase())
+    );
 
     return (
         <>
             <Card style={{ width: '25rem' }}>
-                <Card.Img variant="top" src={imagePath} />
+                <Card.Img variant="top" src={imagePath} alt={`${mealType} image`} />
                 <Card.Body>
                     <Card.Title>{mealType}</Card.Title>
                     <Card.Text>{description}</Card.Text>
                     {selectedMeal && (
-                        <>
-                            <Card.Text className="mt-3">Assigned Meal: {selectedMeal.name}</Card.Text>
-                        </>
+                        <Card.Text className="mt-3">
+                            Assigned Meal: {selectedMeal.name}
+                        </Card.Text>
                     )}
                     <Button variant="primary" onClick={handleShow}>
                         Assign Meal
@@ -53,20 +49,26 @@ function MealCard({ mealType, description, imagePath }) {
                 <Modal.Body>
                     <Form.Group className="mb-3" controlId="mealSearch">
                         <Form.Label>Search Meals</Form.Label>
-                        <Form.Control type="text" placeholder="Search for a meal..." />
+                        <Form.Control
+                            type="text"
+                            placeholder="Search for a meal..."
+                            value={searchValue}
+                            onChange={(e) => setSearchValue(e.target.value)}
+                        />
                     </Form.Group>
 
                     <Dropdown>
                         <Dropdown.Toggle variant="success" id="dropdown-basic">
                             Select Meal
                         </Dropdown.Toggle>
-
                         <Dropdown.Menu>
-                            {meals.map((meal) => (
+                            {filteredMeals.map((meal) => (
                                 <Dropdown.Item
                                     key={meal.id}
-                                    onClick={() => addMeal(meal)}
-                                >
+                                    onClick={() => {
+                                        console.log("Passing meal to handleMealSelect:", meal);
+                                        addMeal(meal)
+                                    }}>
                                     {meal.name}
                                 </Dropdown.Item>
                             ))}

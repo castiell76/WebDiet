@@ -58,7 +58,7 @@ export default function AddMenu({ showToast }) {
         description: "",
         date: new Date(),
         kcal:"",
-        meals: [], 
+        dishes: [], 
     });
 
 
@@ -84,11 +84,15 @@ export default function AddMenu({ showToast }) {
 
 
     const addMeal = (meal) => {
+        if (typeof meal !== "object" || !meal.id || !meal.name) {
+            console.error("Invalid meal object:", meal);
+            return;
+        }
         setFormData((prevData) => ({
             ...prevData,
-            meals: [...prevData.meals, { ...meal, type: meal.type || "" }],
+            dishes: [...prevData.dishes, { ...meal, type: meal.type || "" }],
         }));
-    };  
+    };
 
 
     const removeMeal = (id) => {
@@ -146,7 +150,6 @@ export default function AddMenu({ showToast }) {
                 body: JSON.stringify(formData),
             });
 
-            console.log("token ", token);
 
 
             if (response.ok) {
@@ -157,7 +160,9 @@ export default function AddMenu({ showToast }) {
                     date: new Date(),
                     kcal: "",
                     dishes: [], 
+                    
                 });
+                console.log("sprawdzam...",formData)
             } else {
                 const errorData = await response.json();
                 console.error("Server error:", errorData);
@@ -170,13 +175,22 @@ export default function AddMenu({ showToast }) {
         }
     };
 
-    const handleMealSelect = (mealType, meal) => {
-        setSelectedMeals((prev) => ({
-            ...prev,
-            [mealType]: meal.id, 
-        }));
-    };
+    const handleMealSelect = (meal) => {
+        console.log("Selected meal:", meal);
+        if (!meal || typeof meal !== 'object') {
+            console.error(`Invalid meal object:`, meal);
+            return;
+        }
 
+        if (!meal.id || !meal.name) {
+            console.error(`Missing properties in meal object:`, meal);
+            return;
+        }
+
+        console.log(`Valid meal selected:`, meal);
+        // Tutaj mo¿esz dodaæ logikê dodawania posi³ku do formData
+        addMeal(meal);
+    };
     const mealTypes = getMealTypes(mealCount);
 
     return (
@@ -223,9 +237,13 @@ export default function AddMenu({ showToast }) {
                             key={mealType}
                             mealType={mealType}
                             description={`Description for ${mealType.toLowerCase()}`}
-                            imagePath="/placeholder.jpg" // Placeholder lub obrazek dla ka¿dego posi³ku
-                            meals={meals} // Przeka¿ dostêpne posi³ki
-                            onMealSelect={(meal) => handleMealSelect(mealType, meal)} // Przeka¿ callback
+                            imagePath="/placeholder.jpg"
+                            meals={meals} // Zbiór dostêpnych posi³ków
+                            onMealSelect={(selectedMeal) => {
+                                console.log("Meals data in AddMenu:", meals);
+                                console.log("Selected meal from MealCard:", selectedMeal);
+                                handleMealSelect(selectedMeal);  
+                            }}
                         />
                     ))}
                 </div>
