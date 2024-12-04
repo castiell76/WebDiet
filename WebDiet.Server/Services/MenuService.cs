@@ -43,13 +43,21 @@ namespace WebDiet.Server.Services
         }
         public MenuDto GetById(int id)
         {
-            var menu = _context.Menus.FirstOrDefault(i => i.Id == id);
-            var menuDto = _mapper.Map<MenuDto>(menu);
+            var menu = _context.Menus
+            .Include(d => d.DishesMenu)
+                .ThenInclude(di => di.Dish)
+                .ThenInclude(i=>i.DishIngredients)
+                .ThenInclude(di=>di.Ingredient)
+            .Include(d => d.MenuAllergens)
+                .ThenInclude(da => da.Allergen)
+            .FirstOrDefault(d => d.Id == id);
+
             if (menu == null)
             {
-                throw new NotFoundException("Menu not found");
+                throw new NotFoundException("Dish not found");
             }
 
+            var menuDto = _mapper.Map<MenuDto>(menu);
             return menuDto;
         }
 
@@ -76,45 +84,56 @@ namespace WebDiet.Server.Services
                     .ThenInclude(da => da.Allergen)  
                     .FirstOrDefault(d => d.Id == dishDto.Id);
 
+
+                var ingredientIds = dish.DishIngredients.Select(di => di.IngredientId).ToList();
+                var ingredients = _context.Ingredients
+              .Include(i => i.IngredientAllergens)
+                  .ThenInclude(ia => ia.Allergen)
+              .Where(i => ingredientIds.Contains(i.Id))
+              .ToList();
+
                 if (dish != null)
                 {
-                    // Mapowanie DishesMenu (powiązanie dania z menu)
+
                     var dishMenu = new DishMenu
                     {
                         Dish = dish,
                         Menu = menu,
-                        Type = "some type"  // Możesz przypisać tutaj typ dania, jeśli jest potrzebny
+                        Type = "some type",
+                        User = _context.Users.FirstOrDefault(u => u.UserId == userId)
                     };
                     menu.DishesMenu.Add(dishMenu);
 
-                    // Możesz również zmapować składniki (DishIngredients) i alergeny (DishAllergens),
-                    // ale to może być część powiązania w samym DTO, jeśli użytkownik przekazuje je w `DishDto`
-                    foreach (var ingredientDto in dishDto.Ingredients)
+                    var uniqueAllergenIds = new HashSet<int>();
+                    //????
+                    foreach (var dishIngredient in dish.DishIngredients)
                     {
-                        var ingredient = _context.Ingredients
-                            .FirstOrDefault(i => i.Id == ingredientDto.Id);
+                        var ingredient = ingredients.First(i => i.Id == dishIngredient.IngredientId);
 
-                        if (ingredient != null)
+                        foreach (var ingredientAllergen in ingredient.IngredientAllergens)
                         {
-                            var dishIngredient = new DishIngredient
+                            if (uniqueAllergenIds.Add(ingredientAllergen.AllergenId))
                             {
-                                Dish = dish,
-                                Ingredient = ingredient,
-                                Quantity = ingredientDto.Quantity
-                            };
-                            _context.DishIngredients.Add(dishIngredient);  // Dodaj do kontekstu
+                                menu.MenuAllergens.Add(new MenuAllergen
+                                {
+                                    AllergenId = ingredientAllergen.AllergenId,
+                                    MenuId = menu.Id,
+                                });
+                            }
+                        }
+
+
+                        if (!_context.DishIngredients.Any(di => di.DishId == dishIngredient.DishId && di.IngredientId == dishIngredient.IngredientId))
+                        {
+                            _context.DishIngredients.Add(dishIngredient);
                         }
                     }
                 }
             }
 
-            // Dodanie nowego menu do kontekstu
             _context.Menus.Add(menu);
-
-            // Zapisanie zmian w bazie danych
             _context.SaveChanges();
 
-            // Zwrócenie ID nowo utworzonego menu
             return menu.Id;
         }
 

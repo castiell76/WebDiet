@@ -4,7 +4,7 @@
     {
         public int Id { get; set; }
         public string? Description { get; set; }
-        public ICollection<MenuAllergen>? MenuAllergens { get; set; }
+        public ICollection<MenuAllergen>? MenuAllergens { get; set; } = new List<MenuAllergen>();
         public double? Kcal { get; set; }
         public double? Protein { get; set; }
         public double? Carbo { get; set; }
