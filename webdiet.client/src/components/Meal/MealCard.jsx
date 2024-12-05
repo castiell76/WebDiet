@@ -30,47 +30,39 @@ function MealCard({ mealType, description, imagePath, meals, onMealSelect }) {
         setError(null);
     };
 
-    const handleMealSelect = async (meal) => {
-        try {
-            const response = await fetch(`/api/dish/${meal.id}`);
-            if (!response.ok) throw new Error('Failed to fetch meal details');
 
-            const mealDetails = await response.json();
-            setSelectedMeal(meal);
-            setEditedMeal(mealDetails);
-            setShowModal(false);
-            setShowEditModal(true);
-        } catch (error) {
-            console.error('Error fetching meal details:', error);
-        }
+
+    const handleMealSelect = (meal) => {
+        setSelectedMeal(meal);
+        setEditedMeal({ ...meal, ingredients: [] })
+        setShowEditModal(true);
     };
 
-        const handleSaveCustomMeal = async () => {
+    const handleSaveCustomMeal = async () => {
         try {
-            // Create custom dish only after editing is complete
-            const createResponse = await fetch('/api/usercustomdish', {
+            const response = await fetch('/api/usercustomdish', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     userId: 1,
                     baseDishId: selectedMeal.id,
-                    name: selectedMeal.name,
-                    ingredients: editedMeal.ingredients
-                })
+                    name: editedMeal.name,
+                    ingredients: editedMeal.ingredients,
+                }),
             });
 
-            if (!createResponse.ok) throw new Error('Failed to create custom dish');
+            if (!response.ok) throw new Error('Failed to save meal');
 
-            const customDish = await createResponse.json();
-            setCustomMeal(customDish);
-            onMealSelect(customDish);
+            const savedMeal = await response.json();
+            setCustomMeal(savedMeal);
+            onMealSelect(savedMeal); // przekazanie zapisanego dania do rodzica
             setShowEditModal(false);
         } catch (error) {
-            console.error('Error saving custom dish:', error);
+            console.error('Error saving meal:', error);
         }
     };
-
     const addMeal = async (meal) => {
+        console.log("wywoluje add")
         try {
             // Create custom dish based on selected meal
             const response = await fetch('/api/usercustomdish', {
@@ -94,6 +86,12 @@ function MealCard({ mealType, description, imagePath, meals, onMealSelect }) {
             console.error('Error creating custom dish:', error);
         }
         setShowModal(false);
+    };
+
+    const selectMeal = (meal) => {
+        setSelectedMeal(meal); // Ustawienie wybranego dania
+        setShowModal(false); // Zamkniêcie modala wyboru dania
+        setShowEditModal(false); // Otwórz modal edycji sk³adników
     };
 
 
@@ -312,7 +310,7 @@ function MealCard({ mealType, description, imagePath, meals, onMealSelect }) {
                             {filteredMeals.map((meal) => (
                                 <Dropdown.Item
                                     key={meal.id}
-                                    onClick={() => addMeal(meal)}>
+                                    onClick={() => selectMeal(meal)}>
                                     {meal.name}
                                 </Dropdown.Item>
                             ))}
