@@ -175,22 +175,10 @@ export default function AddMenu({ showToast }) {
         }
     };
 
-    const handleMealSelect = (meal) => {
-        console.log("Selected meal:", meal);
-        if (!meal || typeof meal !== 'object') {
-            console.error(`Invalid meal object:`, meal);
-            return;
-        }
 
-        if (!meal.id || !meal.name) {
-            console.error(`Missing properties in meal object:`, meal);
-            return;
-        }
 
-        console.log(`Valid meal selected:`, meal);
-        // Tutaj mo¿esz dodaæ logikê dodawania posi³ku do formData
-        addMeal(meal);
-    };
+
+
     const mealTypes = getMealTypes(mealCount);
 
     return (

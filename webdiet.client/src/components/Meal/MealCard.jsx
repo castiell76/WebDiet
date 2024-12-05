@@ -7,11 +7,14 @@ function MealCard({ mealType, description, imagePath, meals, onMealSelect }) {
     const [showIngredientModal, setShowIngredientModal] = useState(false);
     const [searchValue, setSearchValue] = useState('');
     const [selectedMeal, setSelectedMeal] = useState(null);
+    const [customMeal, setCustomMeal] = useState(null);
     const [mealDetails, setMealDetails] = useState(null);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
     const [editingIngredient, setEditingIngredient] = useState(null);
-    const [availableIngredients, setAvailableIngredients] = useState([]); 
+    const [availableIngredients, setAvailableIngredients] = useState([]);
+    const [showEditModal, setShowEditModal] = useState(false);
+    const [editedMeal, setEditedMeal] = useState(null);
 
     const handleShow = () => setShowModal(true);
     const handleClose = () => setShowModal(false);
@@ -27,11 +30,70 @@ function MealCard({ mealType, description, imagePath, meals, onMealSelect }) {
         setError(null);
     };
 
-    const addMeal = (meal) => {
-        setSelectedMeal(meal);
-        onMealSelect(meal);
+    const handleMealSelect = async (meal) => {
+        try {
+            const response = await fetch(`/api/dish/${meal.id}`);
+            if (!response.ok) throw new Error('Failed to fetch meal details');
+
+            const mealDetails = await response.json();
+            setSelectedMeal(meal);
+            setEditedMeal(mealDetails);
+            setShowModal(false);
+            setShowEditModal(true);
+        } catch (error) {
+            console.error('Error fetching meal details:', error);
+        }
+    };
+
+        const handleSaveCustomMeal = async () => {
+        try {
+            // Create custom dish only after editing is complete
+            const createResponse = await fetch('/api/usercustomdish', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    userId: 1,
+                    baseDishId: selectedMeal.id,
+                    name: selectedMeal.name,
+                    ingredients: editedMeal.ingredients
+                })
+            });
+
+            if (!createResponse.ok) throw new Error('Failed to create custom dish');
+
+            const customDish = await createResponse.json();
+            setCustomMeal(customDish);
+            onMealSelect(customDish);
+            setShowEditModal(false);
+        } catch (error) {
+            console.error('Error saving custom dish:', error);
+        }
+    };
+
+    const addMeal = async (meal) => {
+        try {
+            // Create custom dish based on selected meal
+            const response = await fetch('/api/usercustomdish', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    userId: 1,
+                    baseDishId: meal.id,
+                    name: meal.name
+                })
+            });
+
+            if (!response.ok) throw new Error('Failed to create custom dish');
+
+            const customDish = await response.json();
+            setSelectedMeal(meal);
+            setCustomMeal(customDish);
+            onMealSelect(customDish);
+
+        } catch (error) {
+            console.error('Error creating custom dish:', error);
+        }
         setShowModal(false);
-        setShowModalDetail(false);
     };
 
 
@@ -42,24 +104,19 @@ function MealCard({ mealType, description, imagePath, meals, onMealSelect }) {
 
     const handleIngredientReplacement = async (newIngredientId) => {
         try {
-            const response = await fetch(`/api/dishingredient/replace`, {
-                method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
+            const response = await fetch(`/api/userdishingredient`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    dishId: mealDetails.id,
-                    oldIngredientId: editingIngredient,
-                    newIngredientId: newIngredientId
+                    userCustomDishId: customMeal.id,
+                    ingredientId: newIngredientId,
+                    quantity: mealDetails.ingredients.find(i => i.id === editingIngredient)?.quantity || 0
                 })
             });
 
-            if (!response.ok) {
-                throw new Error('Failed to replace ingredient');
-            }
-
-            // Odœwie¿ dane posi³ku
+            if (!response.ok) throw new Error('Failed to replace ingredient');
             await fetchMealDetails();
+
         } catch (error) {
             console.error('Error replacing ingredient:', error);
         }
@@ -67,50 +124,23 @@ function MealCard({ mealType, description, imagePath, meals, onMealSelect }) {
         setEditingIngredient(null);
     };
 
-    const handleQuantityChange = async (ingredientId, newQuantity) => {
-        const updatedIngredients = mealDetails.ingredients.map(ing =>
-            ing.id === ingredientId ? { ...ing, quantity: newQuantity } : ing
-        );
-
-        // Tworzenie nowego obiektu DishIngredient
-        const dishIngredient = {
-            dishId: mealDetails.id,
-            ingredientId: ingredientId,
-            quantity: newQuantity
-        };
-
-        try {
-            const response = await fetch('/api/dishingredient', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(dishIngredient)
-            });
-
-            if (!response.ok) {
-                throw new Error('Failed to update ingredient quantity');
-            }
-
-            setMealDetails({
-                ...mealDetails,
-                ingredients: updatedIngredients
-            });
-        } catch (error) {
-            console.error('Error updating ingredient:', error);
-        }
+    const handleQuantityChange = (ingredientId, newQuantity) => {
+        setEditedMeal(prev => ({
+            ...prev,
+            ingredients: prev.ingredients.map(ing =>
+                ing.id === ingredientId ? { ...ing, quantity: newQuantity } : ing
+            )
+        }));
     };
 
 
     const handleRemoveIngredient = async (ingredientId) => {
         try {
-            const response = await fetch(`/api/dishingredient/${mealDetails.id}/${ingredientId}`, {
+            const response = await fetch(`/api/userdishingredient/${customMeal.id}/${ingredientId}`, {
                 method: 'DELETE'
             });
 
-            if (!response.ok) {
-                throw new Error('Failed to remove ingredient');
-            }
+            if (!response.ok) throw new Error('Failed to remove ingredient');
 
             const updatedIngredients = mealDetails.ingredients.filter(ing => ing.id !== ingredientId);
             setMealDetails({
@@ -123,19 +153,17 @@ function MealCard({ mealType, description, imagePath, meals, onMealSelect }) {
     };
 
     const fetchMealDetails = async () => {
-        if (!selectedMeal) return;
+        if (!customMeal) return;
 
         setLoading(true);
         setError(null);
 
         try {
-            const response = await fetch(`/api/dish/${selectedMeal.id}`);
-            if (!response.ok) {
-                throw new Error('Failed to fetch meal details');
-            }
+            const response = await fetch(`/api/usercustomdish/${customMeal.id}`);
+            if (!response.ok) throw new Error('Failed to fetch meal details');
+
             const data = await response.json();
             setMealDetails(data);
-            console.log("fetched data: ", data)
         } catch (err) {
             setError(err.message);
         } finally {
@@ -149,7 +177,7 @@ function MealCard({ mealType, description, imagePath, meals, onMealSelect }) {
 
     const fetchAvailableIngredients = async () => {
         try {
-            const response = await fetch('/api/ingredients');
+            const response = await fetch('/api/ingredient');
             if (!response.ok) {
                 throw new Error('Failed to fetch ingredients');
             }
@@ -253,21 +281,15 @@ function MealCard({ mealType, description, imagePath, meals, onMealSelect }) {
                 <Card.Img variant="top" src={imagePath} alt={`${mealType} image`} />
                 <Card.Body>
                     <Card.Title>{mealType}</Card.Title>
-                    {selectedMeal && (
-                        <Card.Text>{selectedMeal.name}</Card.Text>
-                    )}
-                    <Button variant="primary" onClick={handleShow}>
+                    {customMeal && <Card.Text>{customMeal.name}</Card.Text>}
+                    <Button variant="primary" onClick={() => setShowModal(true)}>
                         Assign Meal
                     </Button>
-                    {selectedMeal && (
-                        <Button variant="primary" onClick={handleShowDetail} className="ms-2">
-                            Show meal details
-                        </Button>
-                    )}
                 </Card.Body>
             </Card>
 
-            <Modal show={showModal} onHide={handleClose}>
+
+            <Modal show={showModal} onHide={() => setShowModal(false)}>
                 <Modal.Header closeButton>
                     <Modal.Title>Assign a Meal</Modal.Title>
                 </Modal.Header>
@@ -304,20 +326,20 @@ function MealCard({ mealType, description, imagePath, meals, onMealSelect }) {
                 </Modal.Footer>
             </Modal>
 
-            <Modal show={showModalDetail} onHide={handleCloseDetail}>
+            <Modal show={showEditModal} onHide={() => setShowEditModal(false)}>
                 <Modal.Header closeButton>
-                    <Modal.Title>Meal details</Modal.Title>
+                    <Modal.Title>Edit Meal</Modal.Title>
                 </Modal.Header>
                 <Modal.Body>
-                    {loading && <p>Loading...</p>}
-                    {error && <p className="text-danger">Error: {error}</p>}
-                    {!loading && !error && renderMealDetails()}
+                    {editedMeal && (
+                        <div>
+ 
+                            <Button onClick={handleSaveCustomMeal}>
+                                Save Changes
+                            </Button>
+                        </div>
+                    )}
                 </Modal.Body>
-                <Modal.Footer>
-                    <Button variant="secondary" onClick={handleCloseDetail}>
-                        Close
-                    </Button>
-                </Modal.Footer>
             </Modal>
 
             {renderIngredientModal()}

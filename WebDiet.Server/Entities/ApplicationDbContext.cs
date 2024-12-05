@@ -16,6 +16,8 @@ namespace WebDiet.Server.Entities
         public DbSet<DishMenu> DishMenus { get; set; }
         public DbSet<IngredientAllergen> IngredientAllergens { get; set; }
         public DbSet<MenuAllergen> MenuAllergens { get; set; }
+        public DbSet<UserCustomDish> UserCustomDishes { get; set; }
+        public DbSet<UserDishIngredient> UserDishIngredients{ get; set; }
 
         public DbSet<Allergen> Allergens { get; set; }
         
@@ -84,20 +86,26 @@ namespace WebDiet.Server.Entities
                 .HasForeignKey(di => di.IngredientId)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            modelBuilder.Entity<DishMenu>()
-                .HasKey(di => new { di.DishId, di.MenuId });
+            modelBuilder.Entity<UserCustomDish>()
+               .HasOne(ucd => ucd.User)
+               .WithMany()
+               .HasForeignKey(ucd => ucd.UserId);
+
+            modelBuilder.Entity<UserCustomDish>()
+                .HasOne(ucd => ucd.BaseDish)
+                .WithMany()
+                .HasForeignKey(ucd => ucd.BaseDishId);
+
+            modelBuilder.Entity<UserDishIngredient>()
+                .HasKey(udi => new { udi.UserCustomDishId, udi.IngredientId });
 
             modelBuilder.Entity<DishMenu>()
-                .HasOne(di => di.Dish)
-                .WithMany(d => d.DishMenus)
-                .HasForeignKey(di => di.DishId)
-                .OnDelete(DeleteBehavior.Restrict); //cascade delete off
+                .HasKey(dm => new { dm.MenuId, dm.DishId });
 
             modelBuilder.Entity<DishMenu>()
-                .HasOne(di => di.Menu)
-                .WithMany(i => i.DishesMenu)
-                .HasForeignKey(di => di.MenuId)
-                .OnDelete(DeleteBehavior.Restrict);
+                .HasOne(dm => dm.UserCustomDish) // Nowa referencja
+                .WithMany()
+                .HasForeignKey(dm => dm.UserCustomDishId);
 
             modelBuilder.Entity<User>()
                 .Property(d => d.Email)
