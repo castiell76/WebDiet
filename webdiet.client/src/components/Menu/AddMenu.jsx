@@ -237,7 +237,7 @@ export default function AddMenu({ showToast }) {
                             key={mealType}
                             mealType={mealType}
                             description={`Description for ${mealType.toLowerCase()}`}
-                            imagePath="/placeholder.jpg"
+                            imagePath={mealImages[mealType] }
                             meals={meals} // Zbiór dostêpnych posi³ków
                             onMealSelect={(selectedMeal) => {
                                 console.log("Meals data in AddMenu:", meals);
