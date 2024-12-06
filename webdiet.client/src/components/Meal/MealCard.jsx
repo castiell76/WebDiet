@@ -15,6 +15,8 @@ function MealCard({ mealType, description, imagePath, meals, onMealSelect }) {
     const [availableIngredients, setAvailableIngredients] = useState([]);
     const [showEditModal, setShowEditModal] = useState(false);
     const [editedMeal, setEditedMeal] = useState(null);
+    const [editedIngredients, setEditedIngredients] = useState([]);
+    const [pendingReplacements, setPendingReplacements] = useState([]);
 
     const handleShow = () => setShowModal(true);
     const handleClose = () => setShowModal(false);
@@ -33,8 +35,11 @@ function MealCard({ mealType, description, imagePath, meals, onMealSelect }) {
 
 
     const handleMealSelect = (meal) => {
+        console.log("wywoluje handlemealselect");
         setSelectedMeal(meal);
-        setEditedMeal({ ...meal, ingredients: [] })
+        onMealSelect(meal);
+        setShowModal(false);
+        setEditedIngredients(meal.ingredients || []);
         setShowEditModal(true);
     };
 
@@ -100,45 +105,102 @@ function MealCard({ mealType, description, imagePath, meals, onMealSelect }) {
         setShowIngredientModal(true);
     };
 
-    const handleIngredientReplacement = async (newIngredientId) => {
-        try {
-            const response = await fetch(`/api/userdishingredient`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    userCustomDishId: customMeal.id,
-                    ingredientId: newIngredientId,
-                    quantity: mealDetails.ingredients.find(i => i.id === editingIngredient)?.quantity || 0
-                })
-            });
+    const handleIngredientReplacement = (newIngredientId) => {
+        setPendingReplacements(prev => [...prev, {
+            dishId: mealDetails.id,
+            oldIngredientId: editingIngredient,
+            newIngredientId: newIngredientId
+        }]);
 
-            if (!response.ok) throw new Error('Failed to replace ingredient');
-            await fetchMealDetails();
+        setMealDetails(prevDetails => ({
+            ...prevDetails,
+            ingredients: prevDetails.ingredients.map(ing =>
+                ing.id === editingIngredient
+                    ? { ...ing, id: newIngredientId, name: ing.name }
 
-        } catch (error) {
-            console.error('Error replacing ingredient:', error);
-        }
+                    : ing
+            )
+        }));
+        
+
         setShowIngredientModal(false);
         setEditingIngredient(null);
     };
 
-    const handleQuantityChange = (ingredientId, newQuantity) => {
-        setEditedMeal(prev => ({
-            ...prev,
-            ingredients: prev.ingredients.map(ing =>
-                ing.id === ingredientId ? { ...ing, quantity: newQuantity } : ing
-            )
-        }));
+    const saveAllChanges = async () => {
+        try {
+            // Wyœlij wszystkie oczekuj¹ce zmiany
+            const responses = await Promise.all(
+                pendingReplacements.map(replacement =>
+                    fetch(`/api/dishingredient/replace`, {
+                        method: 'PUT',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify(replacement)
+                    })
+                )
+            );
+
+            // SprawdŸ, czy wszystkie odpowiedzi s¹ OK
+            if (responses.every(response => response.ok)) {
+                // Wyczyœæ oczekuj¹ce zmiany
+                setPendingReplacements([]);
+                // Odœwie¿ dane
+                await fetchMealDetails();
+            } else {
+                throw new Error('Some replacements failed');
+            }
+        } catch (error) {
+            console.error('Error saving changes:', error);
+            // Mo¿esz tutaj dodaæ obs³ugê b³êdów, np. wyœwietlenie komunikatu
+        }
+    };
+
+    const handleQuantityChange = async (ingredientId, newQuantity) => {
+        const updatedIngredients = mealDetails.ingredients.map(ing =>
+            ing.id === ingredientId ? { ...ing, quantity: newQuantity } : ing
+        );
+
+        // Tworzenie nowego obiektu DishIngredient
+        const dishIngredient = {
+            dishId: mealDetails.id,
+            ingredientId: ingredientId,
+            quantity: newQuantity
+        };
+
+        try {
+            const response = await fetch('/api/dishingredient', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(dishIngredient)
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to update ingredient quantity');
+            }
+
+            setMealDetails({
+                ...mealDetails,
+                ingredients: updatedIngredients
+            });
+        } catch (error) {
+            console.error('Error updating ingredient:', error);
+        }
     };
 
 
     const handleRemoveIngredient = async (ingredientId) => {
         try {
-            const response = await fetch(`/api/userdishingredient/${customMeal.id}/${ingredientId}`, {
+            const response = await fetch(`/api/dishingredient/${mealDetails.id}/${ingredientId}`, {
                 method: 'DELETE'
             });
 
-            if (!response.ok) throw new Error('Failed to remove ingredient');
+            if (!response.ok) {
+                throw new Error('Failed to remove ingredient');
+            }
 
             const updatedIngredients = mealDetails.ingredients.filter(ing => ing.id !== ingredientId);
             setMealDetails({
@@ -151,15 +213,16 @@ function MealCard({ mealType, description, imagePath, meals, onMealSelect }) {
     };
 
     const fetchMealDetails = async () => {
-        if (!customMeal) return;
+        if (!selectedMeal) return;
 
         setLoading(true);
         setError(null);
 
         try {
-            const response = await fetch(`/api/usercustomdish/${customMeal.id}`);
-            if (!response.ok) throw new Error('Failed to fetch meal details');
-
+            const response = await fetch(`/api/dish/${selectedMeal.id}`);
+            if (!response.ok) {
+                throw new Error('Failed to fetch meal details');
+            }
             const data = await response.json();
             setMealDetails(data);
         } catch (err) {
@@ -211,6 +274,17 @@ function MealCard({ mealType, description, imagePath, meals, onMealSelect }) {
                                 {ingredient.name}
                             </Button>
                         ))}
+
+                        {pendingReplacements.length > 0 && (
+                            <div className="mt-3">
+                                <Button
+                                    variant="primary"
+                                    onClick={saveAllChanges}
+                                >
+                                    Zapisz wszystkie zmiany ({pendingReplacements.length})
+                                </Button>
+                            </div>
+                        )}
                     </div>
                 </Form.Group>
             </Modal.Body>
@@ -279,12 +353,26 @@ function MealCard({ mealType, description, imagePath, meals, onMealSelect }) {
                 <Card.Img variant="top" src={imagePath} alt={`${mealType} image`} />
                 <Card.Body>
                     <Card.Title>{mealType}</Card.Title>
-                    {customMeal && <Card.Text>{customMeal.name}</Card.Text>}
+                    <Card.Text>{description}</Card.Text>
+                    {selectedMeal && (
+                        <>
+                            <Card.Text className="mt-3">
+                                Assigned Meal: <strong>{selectedMeal.name}</strong>
+                            </Card.Text>
+                            <Button
+                                variant="secondary"
+                                className="mt-2"
+                                onClick={handleShowDetail}
+                            >
+                                Show Details
+                            </Button>
+                        </>
+                    )}
                     <Button variant="primary" onClick={() => setShowModal(true)}>
                         Assign Meal
                     </Button>
                 </Card.Body>
-            </Card>
+                </Card>
 
 
             <Modal show={showModal} onHide={() => setShowModal(false)}>
@@ -307,13 +395,23 @@ function MealCard({ mealType, description, imagePath, meals, onMealSelect }) {
                             Select Meal
                         </Dropdown.Toggle>
                         <Dropdown.Menu>
-                            {filteredMeals.map((meal) => (
-                                <Dropdown.Item
-                                    key={meal.id}
-                                    onClick={() => selectMeal(meal)}>
-                                    {meal.name}
-                                </Dropdown.Item>
-                            ))}
+                            {filteredMeals.map((meal) => {
+                                if (!meal || !meal.id) {
+                                    return null; 
+                                }
+
+                                return (
+                                    <Dropdown.Item
+                                        key={meal.id}
+                                        onClick={() => {
+                                            handleMealSelect(meal); 
+                                            setShowModal(false);
+                                        }}
+                                    >
+                                        {meal.name}
+                                    </Dropdown.Item>
+                                );
+                            })}
                         </Dropdown.Menu>
                     </Dropdown>
                 </Modal.Body>
@@ -324,20 +422,20 @@ function MealCard({ mealType, description, imagePath, meals, onMealSelect }) {
                 </Modal.Footer>
             </Modal>
 
-            <Modal show={showEditModal} onHide={() => setShowEditModal(false)}>
+             <Modal show={showModalDetail} onHide={handleCloseDetail}>
                 <Modal.Header closeButton>
-                    <Modal.Title>Edit Meal</Modal.Title>
+                    <Modal.Title>Meal details</Modal.Title>
                 </Modal.Header>
                 <Modal.Body>
-                    {editedMeal && (
-                        <div>
- 
-                            <Button onClick={handleSaveCustomMeal}>
-                                Save Changes
-                            </Button>
-                        </div>
-                    )}
+                    {loading && <p>Loading...</p>}
+                    {error && <p className="text-danger">Error: {error}</p>}
+                    {!loading && !error && renderMealDetails()}
                 </Modal.Body>
+                <Modal.Footer>
+                    <Button variant="secondary" onClick={handleCloseDetail}>
+                        Close
+                    </Button>
+                </Modal.Footer>
             </Modal>
 
             {renderIngredientModal()}

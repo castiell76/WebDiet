@@ -133,6 +133,16 @@ export default function AddMenu({ showToast }) {
         }
     };
 
+    const updateDishIngredients = (mealType, ingredients) => {
+        setFormData(prev => ({
+            ...prev,
+            dishes: prev.dishes.map(dish =>
+                dish.type === mealType
+                    ? { ...dish, ingredients }
+                    : dish
+            )
+        }));
+    };
 
     // Obs³uga przesy³ania danych
     const handleSubmit = async (e) => {
@@ -175,21 +185,24 @@ export default function AddMenu({ showToast }) {
         }
     };
 
-    const handleMealSelect = (meal) => {
-        console.log("Selected meal:", meal);
-        if (!meal || typeof meal !== 'object') {
-            console.error(`Invalid meal object:`, meal);
+    const handleMealSelect = (mealType, selectedMeal) => {
+        if (!selectedMeal || !selectedMeal.id) {
+            console.error('Invalid meal selected:', selectedMeal);
             return;
         }
 
-        if (!meal.id || !meal.name) {
-            console.error(`Missing properties in meal object:`, meal);
-            return;
-        }
-
-        console.log(`Valid meal selected:`, meal);
-        // Tutaj mo¿esz dodaæ logikê dodawania posi³ku do formData
-        addMeal(meal);
+        setFormData((prev) => ({
+            ...prev,
+            dishes: [
+                ...prev.dishes.filter((dish) => dish.type !== mealType),
+                {
+                    type: mealType,
+                    id: selectedMeal.id,
+                    name: selectedMeal.name,
+                    ingredients: selectedMeal.ingredients || [],
+                },
+            ],
+        }));
     };
     const mealTypes = getMealTypes(mealCount);
 
@@ -240,9 +253,8 @@ export default function AddMenu({ showToast }) {
                             imagePath={mealImages[mealType] }
                             meals={meals} // Zbiór dostêpnych posi³ków
                             onMealSelect={(selectedMeal) => {
-                                console.log("Meals data in AddMenu:", meals);
-                                console.log("Selected meal from MealCard:", selectedMeal);
-                                handleMealSelect(selectedMeal);  
+                                console.log("Selected meal from MealCard onmealselect:", selectedMeal);
+                                handleMealSelect(mealType,selectedMeal);  
                             }}
                         />
                     ))}
