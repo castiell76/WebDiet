@@ -17,6 +17,14 @@ function MealCard({ mealType, description, imagePath, meals, onMealSelect }) {
     const [editedMeal, setEditedMeal] = useState(null);
     const [editedIngredients, setEditedIngredients] = useState([]);
     const [pendingReplacements, setPendingReplacements] = useState([]);
+    const [localIngredients, setLocalIngredients] = useState([]);
+    const [selectedIngredientToReplace, setSelectedIngredientToReplace] = useState([]);
+
+    useEffect(() => {
+        if (mealDetails) {
+            setLocalIngredients(mealDetails.ingredients);
+        }
+    }, [mealDetails]);
 
     const handleShow = () => setShowModal(true);
     const handleClose = () => setShowModal(false);
@@ -100,31 +108,41 @@ function MealCard({ mealType, description, imagePath, meals, onMealSelect }) {
     };
 
 
-    const handleReplaceIngredient = (oldIngredientId) => {
-        setEditingIngredient(oldIngredientId);
+    const handleReplaceIngredient = (ingredientId) => {
+        setSelectedIngredientToReplace(ingredientId);
         setShowIngredientModal(true);
     };
 
+
     const handleIngredientReplacement = (newIngredientId) => {
-        setPendingReplacements(prev => [...prev, {
-            dishId: mealDetails.id,
-            oldIngredientId: editingIngredient,
-            newIngredientId: newIngredientId
-        }]);
+        // ZnajdŸ nowy sk³adnik
+        const newIngredient = availableIngredients.find(ing => ing.id === newIngredientId);
 
-        setMealDetails(prevDetails => ({
-            ...prevDetails,
-            ingredients: prevDetails.ingredients.map(ing =>
-                ing.id === editingIngredient
-                    ? { ...ing, id: newIngredientId, name: ing.name }
+        // ZnajdŸ stary sk³adnik, ¿eby zachowaæ jego iloœæ
+        const oldIngredient = localIngredients.find(ing => ing.id === selectedIngredientToReplace);
 
-                    : ing
-            )
-        }));
-        
+        console.log('Replacing ingredient:', {
+            oldId: selectedIngredientToReplace,
+            newId: newIngredientId,
+            newIngredient,
+            currentIngredients: localIngredients
+        });
 
+        // Utwórz now¹ tablicê sk³adników z zamienionym sk³adnikiem
+        const updatedIngredients = localIngredients.map(ingredient =>
+            ingredient.id === selectedIngredientToReplace
+                ? { ...newIngredient, quantity: oldIngredient.quantity }
+                : ingredient
+        );
+
+        // Ustaw now¹ listê sk³adników
+        setLocalIngredients(updatedIngredients);
+
+        console.log('Updated ingredients:', updatedIngredients);
+
+        // Zamknij modal i wyczyœæ wybrany sk³adnik
         setShowIngredientModal(false);
-        setEditingIngredient(null);
+        setSelectedIngredientToReplace(null);
     };
 
     const saveAllChanges = async () => {
@@ -157,59 +175,21 @@ function MealCard({ mealType, description, imagePath, meals, onMealSelect }) {
         }
     };
 
-    const handleQuantityChange = async (ingredientId, newQuantity) => {
-        const updatedIngredients = mealDetails.ingredients.map(ing =>
-            ing.id === ingredientId ? { ...ing, quantity: newQuantity } : ing
+    const handleQuantityChange = (ingredientId, newQuantity) => {
+        setLocalIngredients(prevIngredients =>
+            prevIngredients.map(ingredient =>
+                ingredient.id === ingredientId
+                    ? { ...ingredient, quantity: newQuantity }
+                    : ingredient
+            )
         );
-
-        // Tworzenie nowego obiektu DishIngredient
-        const dishIngredient = {
-            dishId: mealDetails.id,
-            ingredientId: ingredientId,
-            quantity: newQuantity
-        };
-
-        try {
-            const response = await fetch('/api/dishingredient', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(dishIngredient)
-            });
-
-            if (!response.ok) {
-                throw new Error('Failed to update ingredient quantity');
-            }
-
-            setMealDetails({
-                ...mealDetails,
-                ingredients: updatedIngredients
-            });
-        } catch (error) {
-            console.error('Error updating ingredient:', error);
-        }
     };
 
 
-    const handleRemoveIngredient = async (ingredientId) => {
-        try {
-            const response = await fetch(`/api/dishingredient/${mealDetails.id}/${ingredientId}`, {
-                method: 'DELETE'
-            });
-
-            if (!response.ok) {
-                throw new Error('Failed to remove ingredient');
-            }
-
-            const updatedIngredients = mealDetails.ingredients.filter(ing => ing.id !== ingredientId);
-            setMealDetails({
-                ...mealDetails,
-                ingredients: updatedIngredients
-            });
-        } catch (error) {
-            console.error('Error removing ingredient:', error);
-        }
+    const handleRemoveIngredient = (ingredientId) => {
+        setLocalIngredients(prevIngredients =>
+            prevIngredients.filter(ingredient => ingredient.id !== ingredientId)
+        );
     };
 
     const fetchMealDetails = async () => {
@@ -274,17 +254,6 @@ function MealCard({ mealType, description, imagePath, meals, onMealSelect }) {
                                 {ingredient.name}
                             </Button>
                         ))}
-
-                        {pendingReplacements.length > 0 && (
-                            <div className="mt-3">
-                                <Button
-                                    variant="primary"
-                                    onClick={saveAllChanges}
-                                >
-                                    Zapisz wszystkie zmiany ({pendingReplacements.length})
-                                </Button>
-                            </div>
-                        )}
                     </div>
                 </Form.Group>
             </Modal.Body>
@@ -304,7 +273,7 @@ function MealCard({ mealType, description, imagePath, meals, onMealSelect }) {
                 <p>Lista sk³adników:</p>
                 <div>
                     <ul className="list-unstyled">
-                        {mealDetails.ingredients.map((ingredient) => (
+                        {localIngredients.map((ingredient) => (
                             <li key={ingredient.id} className="mb-2">
                                 <InputGroup>
                                     <InputGroup.Text>{ingredient.name}</InputGroup.Text>
