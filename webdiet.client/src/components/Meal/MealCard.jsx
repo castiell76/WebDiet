@@ -18,7 +18,8 @@ function MealCard({ mealType, description, imagePath, meals, onMealSelect }) {
     const [selectedIngredientToReplace, setSelectedIngredientToReplace] = useState([]);
     const [modalMode, setModalMode] = useState('replace');
     const [userCustomDish, setUserCustomDish] = useState({
-        name: "",
+        name: "marek",
+        baseDishId:"",
         customIngredients: [],
     });
 
@@ -91,27 +92,28 @@ function MealCard({ mealType, description, imagePath, meals, onMealSelect }) {
 
     const saveAllChanges = async () => {
         try {
-            setLocalIngredients(prevIngredients => [...prevIngredients]);
-            setUserCustomDish(prevUserCustomDish => ({
-                ...prevUserCustomDish,
-                customIngredients: localIngredients
-            })); 
+            const updatedDish = {
+                ...userCustomDish,
+                customIngredients: localIngredients,
+                baseDishId: selectedMeal.id,
+                userId: "1"
+            };
 
-            const response = await fetch(
-                fetch(`/api/dishmenu/create`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify(userCustomDish)
-                }
-                )     
-            );
-            console.log(userCustomDish);
-            console.log(localIngredients);
-        }
+            console.log('Sending data:', updatedDish);
+            const response = await fetch('/api/usercustomdish', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(updatedDish)
+            });
 
-        catch (error) {
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+
+            setUserCustomDish(updatedDish);
+        } catch (error) {
             console.error('Error saving changes:', error);
         }
     };
