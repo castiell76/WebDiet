@@ -253,7 +253,6 @@ export default function AddMenu({ showToast }) {
                             imagePath={mealImages[mealType] }
                             meals={meals} // Zbiór dostêpnych posi³ków
                             onMealSelect={(selectedMeal) => {
-                                console.log("Selected meal from MealCard onmealselect:", selectedMeal);
                                 handleMealSelect(mealType,selectedMeal);  
                             }}
                         />

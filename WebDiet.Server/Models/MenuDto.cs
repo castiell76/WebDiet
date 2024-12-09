@@ -12,6 +12,6 @@ namespace WebDiet.Server.Models
         public double? Carbo { get; set; }
         public double? Fat { get; set; }
         public DateTime Date { get; set; }
-        public List<DishDto>? Dishes { get; set; }
+        public ICollection<DishMenu>? Dishes { get; set; } = new List<DishMenu>();
     }
 }

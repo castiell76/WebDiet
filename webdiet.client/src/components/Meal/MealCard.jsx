@@ -7,18 +7,20 @@ function MealCard({ mealType, description, imagePath, meals, onMealSelect }) {
     const [showIngredientModal, setShowIngredientModal] = useState(false);
     const [searchValue, setSearchValue] = useState('');
     const [selectedMeal, setSelectedMeal] = useState(null);
-    const [customMeal, setCustomMeal] = useState(null);
     const [mealDetails, setMealDetails] = useState(null);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
-    const [editingIngredient, setEditingIngredient] = useState(null);
     const [availableIngredients, setAvailableIngredients] = useState([]);
     const [showEditModal, setShowEditModal] = useState(false);
     const [editedMeal, setEditedMeal] = useState(null);
     const [editedIngredients, setEditedIngredients] = useState([]);
-    const [pendingReplacements, setPendingReplacements] = useState([]);
     const [localIngredients, setLocalIngredients] = useState([]);
     const [selectedIngredientToReplace, setSelectedIngredientToReplace] = useState([]);
+    const [modalMode, setModalMode] = useState('replace');
+    const [userCustomDish, setUserCustomDish] = useState({
+        name: "",
+        customIngredients: [],
+    });
 
     useEffect(() => {
         if (mealDetails) {
@@ -26,7 +28,6 @@ function MealCard({ mealType, description, imagePath, meals, onMealSelect }) {
         }
     }, [mealDetails]);
 
-    const handleShow = () => setShowModal(true);
     const handleClose = () => setShowModal(false);
     const handleShowDetail = async () => {
         if (selectedMeal) {
@@ -43,7 +44,6 @@ function MealCard({ mealType, description, imagePath, meals, onMealSelect }) {
 
 
     const handleMealSelect = (meal) => {
-        console.log("wywoluje handlemealselect");
         setSelectedMeal(meal);
         onMealSelect(meal);
         setShowModal(false);
@@ -51,61 +51,6 @@ function MealCard({ mealType, description, imagePath, meals, onMealSelect }) {
         setShowEditModal(true);
     };
 
-    const handleSaveCustomMeal = async () => {
-        try {
-            const response = await fetch('/api/usercustomdish', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    userId: 1,
-                    baseDishId: selectedMeal.id,
-                    name: editedMeal.name,
-                    ingredients: editedMeal.ingredients,
-                }),
-            });
-
-            if (!response.ok) throw new Error('Failed to save meal');
-
-            const savedMeal = await response.json();
-            setCustomMeal(savedMeal);
-            onMealSelect(savedMeal); // przekazanie zapisanego dania do rodzica
-            setShowEditModal(false);
-        } catch (error) {
-            console.error('Error saving meal:', error);
-        }
-    };
-    const addMeal = async (meal) => {
-        console.log("wywoluje add")
-        try {
-            // Create custom dish based on selected meal
-            const response = await fetch('/api/usercustomdish', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    userId: 1,
-                    baseDishId: meal.id,
-                    name: meal.name
-                })
-            });
-
-            if (!response.ok) throw new Error('Failed to create custom dish');
-
-            const customDish = await response.json();
-            setSelectedMeal(meal);
-            setCustomMeal(customDish);
-            onMealSelect(customDish);
-
-        } catch (error) {
-            console.error('Error creating custom dish:', error);
-        }
-        setShowModal(false);
-    };
-
-    const selectMeal = (meal) => {
-        setSelectedMeal(meal); // Ustawienie wybranego dania
-        setShowModal(false); // Zamkniêcie modala wyboru dania
-        setShowEditModal(false); // Otwórz modal edycji sk³adników
-    };
 
 
     const handleReplaceIngredient = (ingredientId) => {
@@ -113,65 +58,61 @@ function MealCard({ mealType, description, imagePath, meals, onMealSelect }) {
         setShowIngredientModal(true);
     };
 
+    const handleAddIngredient = () => {
+        setModalMode('add');
+        setShowIngredientModal(true);
+    };
 
-    const handleIngredientReplacement = (newIngredientId) => {
-        // ZnajdŸ nowy sk³adnik
-        const newIngredient = availableIngredients.find(ing => ing.id === newIngredientId);
 
-        // ZnajdŸ stary sk³adnik, ¿eby zachowaæ jego iloœæ
-        const oldIngredient = localIngredients.find(ing => ing.id === selectedIngredientToReplace);
+    const handleIngredientSelection = (ingredientId) => {
+        const selectedIngredient = availableIngredients.find(ing => ing.id === ingredientId);
 
-        console.log('Replacing ingredient:', {
-            oldId: selectedIngredientToReplace,
-            newId: newIngredientId,
-            newIngredient,
-            currentIngredients: localIngredients
-        });
+        if (modalMode === 'add') {
 
-        // Utwórz now¹ tablicê sk³adników z zamienionym sk³adnikiem
-        const updatedIngredients = localIngredients.map(ingredient =>
-            ingredient.id === selectedIngredientToReplace
-                ? { ...newIngredient, quantity: oldIngredient.quantity }
-                : ingredient
-        );
+            const newIngredient = {
+                ...selectedIngredient,
+                quantity: 100
+            };
+            setLocalIngredients(prevIngredients => [...prevIngredients, newIngredient]);
+        } else {
+            const oldIngredient = localIngredients.find(ing => ing.id === selectedIngredientToReplace);
+            setLocalIngredients(prevIngredients =>
+                prevIngredients.map(ingredient =>
+                    ingredient.id === selectedIngredientToReplace
+                        ? { ...selectedIngredient, quantity: oldIngredient.quantity }
+                        : ingredient
+                )
+            );
+        }
 
-        // Ustaw now¹ listê sk³adników
-        setLocalIngredients(updatedIngredients);
-
-        console.log('Updated ingredients:', updatedIngredients);
-
-        // Zamknij modal i wyczyœæ wybrany sk³adnik
         setShowIngredientModal(false);
         setSelectedIngredientToReplace(null);
     };
 
     const saveAllChanges = async () => {
         try {
-            // Wyœlij wszystkie oczekuj¹ce zmiany
-            const responses = await Promise.all(
-                pendingReplacements.map(replacement =>
-                    fetch(`/api/dishingredient/replace`, {
-                        method: 'PUT',
-                        headers: {
-                            'Content-Type': 'application/json',
-                        },
-                        body: JSON.stringify(replacement)
-                    })
-                )
-            );
+            setLocalIngredients(prevIngredients => [...prevIngredients]);
+            setUserCustomDish(prevUserCustomDish => ({
+                ...prevUserCustomDish,
+                customIngredients: localIngredients
+            })); 
 
-            // SprawdŸ, czy wszystkie odpowiedzi s¹ OK
-            if (responses.every(response => response.ok)) {
-                // Wyczyœæ oczekuj¹ce zmiany
-                setPendingReplacements([]);
-                // Odœwie¿ dane
-                await fetchMealDetails();
-            } else {
-                throw new Error('Some replacements failed');
-            }
-        } catch (error) {
+            const response = await fetch(
+                fetch(`/api/dishmenu/create`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(userCustomDish)
+                }
+                )     
+            );
+            console.log(userCustomDish);
+            console.log(localIngredients);
+        }
+
+        catch (error) {
             console.error('Error saving changes:', error);
-            // Mo¿esz tutaj dodaæ obs³ugê b³êdów, np. wyœwietlenie komunikatu
         }
     };
 
@@ -238,22 +179,30 @@ function MealCard({ mealType, description, imagePath, meals, onMealSelect }) {
     const renderIngredientModal = () => (
         <Modal show={showIngredientModal} onHide={() => setShowIngredientModal(false)}>
             <Modal.Header closeButton>
-                <Modal.Title>Wybierz nowy sk³adnik</Modal.Title>
+                <Modal.Title>
+                    {modalMode === 'add' ? 'Dodaj nowy sk³adnik' : 'Wybierz nowy sk³adnik'}
+                </Modal.Title>
             </Modal.Header>
             <Modal.Body>
                 <Form.Group>
                     <Form.Label>Dostêpne sk³adniki</Form.Label>
                     <div style={{ maxHeight: '300px', overflowY: 'auto' }}>
-                        {availableIngredients.map(ingredient => (
-                            <Button
-                                key={ingredient.id}
-                                variant="outline-primary"
-                                className="m-1"
-                                onClick={() => handleIngredientReplacement(ingredient.id)}
-                            >
-                                {ingredient.name}
-                            </Button>
-                        ))}
+                        {availableIngredients
+                            // Opcjonalnie: filtruj sk³adniki, które ju¿ s¹ na liœcie podczas dodawania
+                            .filter(ingredient =>
+                                modalMode === 'replace' ||
+                                !localIngredients.some(local => local.id === ingredient.id)
+                            )
+                            .map(ingredient => (
+                                <Button
+                                    key={ingredient.id}
+                                    variant="outline-primary"
+                                    className="m-1"
+                                    onClick={() => handleIngredientSelection(ingredient.id)}
+                                >
+                                    {ingredient.name}
+                                </Button>
+                            ))}
                     </div>
                 </Form.Group>
             </Modal.Body>
@@ -274,7 +223,7 @@ function MealCard({ mealType, description, imagePath, meals, onMealSelect }) {
                 <div>
                     <ul className="list-unstyled">
                         {localIngredients.map((ingredient) => (
-                            <li key={ingredient.id} className="mb-2">
+                            <li key={`${ingredient.id}-${ingredient.name}`} className="mb-2">
                                 <InputGroup>
                                     <InputGroup.Text>{ingredient.name}</InputGroup.Text>
                                     <Form.Control
@@ -286,7 +235,10 @@ function MealCard({ mealType, description, imagePath, meals, onMealSelect }) {
                                     <InputGroup.Text>g</InputGroup.Text>
                                     <Button
                                         variant="warning"
-                                        onClick={() => handleReplaceIngredient(ingredient.id)}
+                                        onClick={() => {
+                                            setModalMode('replace');
+                                            handleReplaceIngredient(ingredient.id);
+                                        }}
                                     >
                                         Zamieñ
                                     </Button>
@@ -300,6 +252,13 @@ function MealCard({ mealType, description, imagePath, meals, onMealSelect }) {
                             </li>
                         ))}
                     </ul>
+                    <Button
+                        variant="success"
+                        onClick={handleAddIngredient}
+                        className="mt-3"
+                    >
+                        Dodaj nowy sk³adnik
+                    </Button>
                 </div>
                 <p><strong>Description:</strong> {mealDetails.description || 'No description available'}</p>
                 <p><strong>Calories:</strong> {mealDetails.kcal || 0} kcal</p>
@@ -313,6 +272,8 @@ function MealCard({ mealType, description, imagePath, meals, onMealSelect }) {
                     </>
                 )}
             </div>
+
+
         );
     };
 
@@ -401,6 +362,16 @@ function MealCard({ mealType, description, imagePath, meals, onMealSelect }) {
                     {!loading && !error && renderMealDetails()}
                 </Modal.Body>
                 <Modal.Footer>
+
+                    <Button
+                        variant="success"
+                        onClick={() => {
+                            saveAllChanges();
+                            setShowModalDetail(false)
+                        }}
+                    >
+                        Save changes
+                    </Button>
                     <Button variant="secondary" onClick={handleCloseDetail}>
                         Close
                     </Button>

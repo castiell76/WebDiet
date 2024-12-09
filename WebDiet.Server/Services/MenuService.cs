@@ -74,7 +74,7 @@ namespace WebDiet.Server.Services
             var menu = _mapper.Map<Menu>(dto);
             menu.UserId = userId;
 
-            // Mapowanie Dishes do Menu (jeśli zawiera je DTO)
+
             foreach (var dishDto in dto.Dishes)
             {
                 var dish = _context.Dishes
@@ -82,7 +82,7 @@ namespace WebDiet.Server.Services
                     .ThenInclude(di => di.Ingredient) 
                     .Include(d => d.DishAllergens)   
                     .ThenInclude(da => da.Allergen)  
-                    .FirstOrDefault(d => d.Id == dishDto.Id);
+                    .FirstOrDefault(d => d.Id == dishDto.DishId);
 
 
                 var ingredientIds = dish.DishIngredients.Select(di => di.IngredientId).ToList();
