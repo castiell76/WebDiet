@@ -92,18 +92,21 @@ function MealCard({ mealType, description, imagePath, meals, onMealSelect }) {
 
     const saveAllChanges = async () => {
         try {
+            const token = localStorage.getItem("jwtToken");
             const updatedDish = {
-                ...userCustomDish,
-                customIngredients: localIngredients,
+                name: userCustomDish?.name || `Custom ${selectedMeal.name}`,
+                customIngredients: localIngredients.map(ingredient => ({
+                    ingredientId: ingredient.id,
+                    quantity: ingredient.quantity
+                })),
                 baseDishId: selectedMeal.id,
-                userId: "1"
             };
 
-            console.log('Sending data:', updatedDish);
             const response = await fetch('/api/usercustomdish', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
+                    "Authorization": `Bearer ${token}`
                 },
                 body: JSON.stringify(updatedDish)
             });
@@ -112,7 +115,11 @@ function MealCard({ mealType, description, imagePath, meals, onMealSelect }) {
                 throw new Error(`HTTP error! status: ${response.status}`);
             }
 
-            setUserCustomDish(updatedDish);
+            const savedDish = await response.json();
+            setUserCustomDish(savedDish);
+
+            // Odœwie¿ szczegó³y dania po zapisaniu zmian
+            await fetchMealDetails();
         } catch (error) {
             console.error('Error saving changes:', error);
         }
@@ -142,12 +149,32 @@ function MealCard({ mealType, description, imagePath, meals, onMealSelect }) {
         setError(null);
 
         try {
-            const response = await fetch(`/api/dish/${selectedMeal.id}`);
-            if (!response.ok) {
-                throw new Error('Failed to fetch meal details');
+            // Najpierw sprawdŸ, czy istnieje w³asna wersja dania
+            const token = localStorage.getItem("jwtToken");
+            const customDishResponse = await fetch(`/api/usercustomdish/${selectedMeal.id}`, {
+                headers: {
+                    "Authorization": `Bearer ${token}`
+                }
+            });
+
+            if (customDishResponse.ok) {
+                // Jeœli znaleziono w³asn¹ wersjê, u¿yj jej
+                const customData = await customDishResponse.json();
+                setUserCustomDish(customData);
+                setMealDetails({
+                    ...selectedMeal,
+                    ingredients: customData.customIngredients
+                });
+            } else {
+                // Jeœli nie ma w³asnej wersji, pobierz bazow¹ wersjê dania
+                const baseResponse = await fetch(`/api/dish/${selectedMeal.id}`);
+                if (!baseResponse.ok) {
+                    throw new Error('Failed to fetch meal details');
+                }
+                const baseData = await baseResponse.json();
+                setMealDetails(baseData);
+                setUserCustomDish(null);
             }
-            const data = await response.json();
-            setMealDetails(data);
         } catch (err) {
             setError(err.message);
         } finally {
@@ -290,6 +317,7 @@ function MealCard({ mealType, description, imagePath, meals, onMealSelect }) {
                         <>
                             <Card.Text className="mt-3">
                                 Assigned Meal: <strong>{selectedMeal.name}</strong>
+                                {userCustomDish && <span className="text-success"> (Customized)</span>}
                             </Card.Text>
                             <Button
                                 variant="secondary"
@@ -304,7 +332,7 @@ function MealCard({ mealType, description, imagePath, meals, onMealSelect }) {
                         Assign Meal
                     </Button>
                 </Card.Body>
-                </Card>
+            </Card>
 
 
             <Modal show={showModal} onHide={() => setShowModal(false)}>

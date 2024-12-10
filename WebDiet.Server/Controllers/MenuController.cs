@@ -43,6 +43,7 @@ namespace WebDiet.Server.Controllers
             }
 
             var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
+
             foreach (var claim in User.Claims)
             {
                 Console.WriteLine($"Claim Type: {claim.Type}, Value: {claim.Value}");

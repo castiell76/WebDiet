@@ -96,8 +96,19 @@ namespace WebDiet.Server.Entities
                 .WithMany()
                 .HasForeignKey(ucd => ucd.BaseDishId);
 
-            modelBuilder.Entity<UserDishIngredient>()
-                .HasKey(udi => new { udi.UserCustomDishId, udi.IngredientId });
+            modelBuilder.Entity<UserDishIngredient>(entity =>
+            {
+                entity.HasKey(e => new { e.UserCustomDishId, e.IngredientId });
+
+                entity.HasOne(d => d.UserCustomDish)
+                    .WithMany(p => p.CustomIngredients)
+                    .HasForeignKey(d => d.UserCustomDishId);
+
+                entity.HasOne(d => d.Ingredient)
+                    .WithMany()
+                    .HasForeignKey(d => d.IngredientId)
+                    .OnDelete(DeleteBehavior.ClientSetNull);
+            });
 
             modelBuilder.Entity<DishMenu>()
                 .HasKey(dm => new { dm.MenuId, dm.DishId });

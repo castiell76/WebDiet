@@ -36,7 +36,7 @@ namespace WebDiet.Server.Controllers
 
             _service.Create(dto, userId); //, userId
 
-            return Created($"/api/dishes/{dto.Id}", null);
+            return Created($"/api/dishes/{dto.BaseDishId}", null);
         }
     }
 }
