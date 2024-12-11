@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using WebDiet.Server.Entities;
 
@@ -11,9 +12,11 @@ using WebDiet.Server.Entities;
 namespace WebDiet.Server.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20241211131422_11.12-1")]
+    partial class _11121
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -30,29 +33,11 @@ namespace WebDiet.Server.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<string>("Allergens")
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<int>("BaseDishId")
                         .HasColumnType("int");
 
-                    b.Property<double?>("Carbo")
-                        .HasColumnType("float");
-
-                    b.Property<string>("Description")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<double?>("Fat")
-                        .HasColumnType("float");
-
-                    b.Property<double?>("Kcal")
-                        .HasColumnType("float");
-
                     b.Property<string>("Name")
                         .HasColumnType("nvarchar(max)");
-
-                    b.Property<double?>("Protein")
-                        .HasColumnType("float");
 
                     b.Property<int>("UserId")
                         .HasColumnType("int");

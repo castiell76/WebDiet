@@ -34,9 +34,52 @@ namespace WebDiet.Server.Controllers
 
             int userId = int.Parse(userIdClaim.Value);
 
-            _service.Create(dto, userId); //, userId
+            var createdDishId = _service.Create(dto, userId);
 
-            return Created($"/api/dishes/{dto.BaseDishId}", null);
+            return Created($"/api/dishes/{dto.BaseDishId}", createdDishId);
+        }
+        [HttpGet("{id}")]
+        public ActionResult<DishDto> Get([FromRoute] int id)
+        {
+            var userCustomDish = _service.GetById(id);
+            if (userCustomDish == null)
+            {
+                return NotFound();
+            }
+
+            // Mapowanie na DishDto
+            var dishDto = new DishDto
+            {
+                Id = id,
+                Name = userCustomDish.Name,
+                Description = userCustomDish.Description,
+                Ingredients = userCustomDish.CustomIngredients.Select(ci => new IngredientDto
+                {
+                    Id = ci.IngredientId,
+                    Quantity = ci.Quantity
+                }).ToList(),
+            };
+
+            return Ok(dishDto);
+        }
+        [HttpGet("bydish/{dishId}")]
+        public ActionResult<UserCustomDishDto> GetByBaseDish([FromRoute] int dishId)
+        {
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
+            if (userIdClaim == null)
+            {
+                return Unauthorized("User ID not found in token.");
+            }
+
+            int userId = int.Parse(userIdClaim.Value);
+            var userCustomDish = _service.GetByBaseDishAndUser(dishId, userId);
+
+            if (userCustomDish == null)
+            {
+                return NotFound();
+            }
+
+            return Ok(userCustomDish);
         }
     }
 }

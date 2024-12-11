@@ -16,16 +16,21 @@ function MealCard({ mealType, description, imagePath, meals, onMealSelect }) {
     const [editedIngredients, setEditedIngredients] = useState([]);
     const [localIngredients, setLocalIngredients] = useState([]);
     const [selectedIngredientToReplace, setSelectedIngredientToReplace] = useState([]);
+    const [hasChanges, setHasChanges] = useState(false);
+    const [originalIngredients, setOriginalIngredients] = useState([]);
     const [modalMode, setModalMode] = useState('replace');
     const [userCustomDish, setUserCustomDish] = useState({
         name: "marek",
-        baseDishId:"",
+        baseDishId: "",
         customIngredients: [],
     });
 
     useEffect(() => {
         if (mealDetails) {
             setLocalIngredients(mealDetails.ingredients);
+            console.log("!!!!!!!",mealDetails);
+            //setOriginalIngredients(JSON.parse(JSON.stringify(mealDetails.ingredients)));
+            setHasChanges(false);
         }
     }, [mealDetails]);
 
@@ -69,7 +74,6 @@ function MealCard({ mealType, description, imagePath, meals, onMealSelect }) {
         const selectedIngredient = availableIngredients.find(ing => ing.id === ingredientId);
 
         if (modalMode === 'add') {
-
             const newIngredient = {
                 ...selectedIngredient,
                 quantity: 100
@@ -86,11 +90,17 @@ function MealCard({ mealType, description, imagePath, meals, onMealSelect }) {
             );
         }
 
+        setHasChanges(true);
         setShowIngredientModal(false);
         setSelectedIngredientToReplace(null);
     };
 
     const saveAllChanges = async () => {
+        if (!hasChanges) {
+            setShowModalDetail(false);
+            return;
+        }
+
         try {
             const token = localStorage.getItem("jwtToken");
             const updatedDish = {
@@ -115,13 +125,21 @@ function MealCard({ mealType, description, imagePath, meals, onMealSelect }) {
                 throw new Error(`HTTP error! status: ${response.status}`);
             }
 
-            const savedDish = await response.json();
-            setUserCustomDish(savedDish);
 
-            // Odœwie¿ szczegó³y dania po zapisaniu zmian
-            await fetchMealDetails();
+            const responseText = await response.text();
+            const savedDish = responseText ? JSON.parse(responseText) : null;
+
+            if (savedDish) {
+                updatedDish.id = savedDish;
+                setUserCustomDish(updatedDish);
+                await fetchMealDetails();
+            }
+
+            setHasChanges(false);
+            setShowModalDetail(false);
         } catch (error) {
             console.error('Error saving changes:', error);
+            // You might want to show an error message to the user here
         }
     };
 
@@ -133,13 +151,14 @@ function MealCard({ mealType, description, imagePath, meals, onMealSelect }) {
                     : ingredient
             )
         );
+        setHasChanges(true);
     };
-
 
     const handleRemoveIngredient = (ingredientId) => {
         setLocalIngredients(prevIngredients =>
             prevIngredients.filter(ingredient => ingredient.id !== ingredientId)
         );
+        setHasChanges(true);
     };
 
     const fetchMealDetails = async () => {
@@ -149,34 +168,34 @@ function MealCard({ mealType, description, imagePath, meals, onMealSelect }) {
         setError(null);
 
         try {
-            // Najpierw sprawdŸ, czy istnieje w³asna wersja dania
-            const token = localStorage.getItem("jwtToken");
-            const customDishResponse = await fetch(`/api/usercustomdish/${selectedMeal.id}`, {
-                headers: {
-                    "Authorization": `Bearer ${token}`
-                }
-            });
+            let mealData;
+            console.log("usercustomdish", userCustomDish);
+            console.log("basedishId", userCustomDish.baseDishId);
+            console.log("dishid", selectedMeal.id)
+            console.log("localingredients: ", localIngredients);
 
-            if (customDishResponse.ok) {
-                // Jeœli znaleziono w³asn¹ wersjê, u¿yj jej
-                const customData = await customDishResponse.json();
-                setUserCustomDish(customData);
-                setMealDetails({
-                    ...selectedMeal,
-                    ingredients: customData.customIngredients
-                });
+            if (userCustomDish && userCustomDish.baseDishId === selectedMeal.id) {
+
+                const customResponse = await fetch(`/api/usercustomdish/${userCustomDish.id}`);
+                if (!customResponse.ok) {
+                    throw new Error('Failed to fetch custom meal details');
+                }
+                mealData = await customResponse.json();
+                console.log("Customized meal data:", mealData);
             } else {
-                // Jeœli nie ma w³asnej wersji, pobierz bazow¹ wersjê dania
+
                 const baseResponse = await fetch(`/api/dish/${selectedMeal.id}`);
                 if (!baseResponse.ok) {
                     throw new Error('Failed to fetch meal details');
                 }
-                const baseData = await baseResponse.json();
-                setMealDetails(baseData);
-                setUserCustomDish(null);
+                mealData = await baseResponse.json();
+                console.log("Default meal data:", mealData);
             }
+            console.log("finalmealdata: ", mealData);
+            setMealDetails(mealData);
         } catch (err) {
             setError(err.message);
+            console.error('Error fetching meal details:', err);
         } finally {
             setLoading(false);
         }
@@ -251,7 +270,7 @@ function MealCard({ mealType, description, imagePath, meals, onMealSelect }) {
                 <p>Lista sk³adników:</p>
                 <div>
                     <ul className="list-unstyled">
-                        {localIngredients.map((ingredient) => (
+                        {Array.isArray(localIngredients) && localIngredients.map((ingredient) => (
                             <li key={`${ingredient.id}-${ingredient.name}`} className="mb-2">
                                 <InputGroup>
                                     <InputGroup.Text>{ingredient.name}</InputGroup.Text>
@@ -323,6 +342,7 @@ function MealCard({ mealType, description, imagePath, meals, onMealSelect }) {
                                 variant="secondary"
                                 className="mt-2"
                                 onClick={handleShowDetail}
+                                key=""
                             >
                                 Show Details
                             </Button>
@@ -357,14 +377,14 @@ function MealCard({ mealType, description, imagePath, meals, onMealSelect }) {
                         <Dropdown.Menu>
                             {filteredMeals.map((meal) => {
                                 if (!meal || !meal.id) {
-                                    return null; 
+                                    return null;
                                 }
 
                                 return (
                                     <Dropdown.Item
                                         key={meal.id}
                                         onClick={() => {
-                                            handleMealSelect(meal); 
+                                            handleMealSelect(meal);
                                             setShowModal(false);
                                         }}
                                     >
@@ -382,7 +402,7 @@ function MealCard({ mealType, description, imagePath, meals, onMealSelect }) {
                 </Modal.Footer>
             </Modal>
 
-             <Modal show={showModalDetail} onHide={handleCloseDetail}>
+            <Modal show={showModalDetail} onHide={handleCloseDetail}>
                 <Modal.Header closeButton>
                     <Modal.Title>Meal details</Modal.Title>
                 </Modal.Header>
@@ -392,16 +412,14 @@ function MealCard({ mealType, description, imagePath, meals, onMealSelect }) {
                     {!loading && !error && renderMealDetails()}
                 </Modal.Body>
                 <Modal.Footer>
-
-                    <Button
-                        variant="success"
-                        onClick={() => {
-                            saveAllChanges();
-                            setShowModalDetail(false)
-                        }}
-                    >
-                        Save changes
-                    </Button>
+                    {hasChanges && (
+                        <Button
+                            variant="success"
+                            onClick={saveAllChanges}
+                        >
+                            Save changes
+                        </Button>
+                    )}
                     <Button variant="secondary" onClick={handleCloseDetail}>
                         Close
                     </Button>

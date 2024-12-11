@@ -8,10 +8,9 @@ namespace WebDiet.Server.Mappers
     {
         public UserCustomDishMappingProfile()
         {
-            //CreateMap<UserCustomDish, UserCustomDishDto>()
-            //.ForMember(dest => dest.User, opt => opt.MapFrom(src => src.User))
-            //.ForMember(dest => dest.BaseDish, opt => opt.MapFrom(src => src.BaseDish))
-            //.ForMember(dest => dest.CustomIngredients, opt => opt.MapFrom(src => src.CustomIngredients));
+            CreateMap<UserCustomDish, UserCustomDishDto>()
+            .ForMember(dest => dest.BaseDishId, opt => opt.MapFrom(src => src.BaseDishId))
+            .ForMember(dest => dest.CustomIngredients, opt => opt.MapFrom(src => src.CustomIngredients));
 
         }
     }
