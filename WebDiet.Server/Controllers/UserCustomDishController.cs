@@ -46,21 +46,8 @@ namespace WebDiet.Server.Controllers
             {
                 return NotFound();
             }
+            return Ok(userCustomDish);
 
-            // Mapowanie na DishDto
-            var dishDto = new DishDto
-            {
-                Id = id,
-                Name = userCustomDish.Name,
-                Description = userCustomDish.Description,
-                Ingredients = userCustomDish.CustomIngredients.Select(ci => new IngredientDto
-                {
-                    Id = ci.IngredientId,
-                    Quantity = ci.Quantity
-                }).ToList(),
-            };
-
-            return Ok(dishDto);
         }
         [HttpGet("bydish/{dishId}")]
         public ActionResult<UserCustomDishDto> GetByBaseDish([FromRoute] int dishId)

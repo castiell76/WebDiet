@@ -20,7 +20,7 @@ function MealCard({ mealType, description, imagePath, meals, onMealSelect }) {
     const [originalIngredients, setOriginalIngredients] = useState([]);
     const [modalMode, setModalMode] = useState('replace');
     const [userCustomDish, setUserCustomDish] = useState({
-        name: "marek",
+        name: "",
         baseDishId: "",
         customIngredients: [],
     });
@@ -169,10 +169,7 @@ function MealCard({ mealType, description, imagePath, meals, onMealSelect }) {
 
         try {
             let mealData;
-            console.log("usercustomdish", userCustomDish);
-            console.log("basedishId", userCustomDish.baseDishId);
-            console.log("dishid", selectedMeal.id)
-            console.log("localingredients: ", localIngredients);
+
 
             if (userCustomDish && userCustomDish.baseDishId === selectedMeal.id) {
 

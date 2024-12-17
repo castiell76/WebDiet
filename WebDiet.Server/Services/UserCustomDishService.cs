@@ -9,7 +9,7 @@ namespace WebDiet.Server.Services
     public interface IUserCustomDishService
     {
         int Create(UserCustomDishDto dto, int userId);
-        UserCustomDishDto GetById(int dto);
+        DishDto GetById(int dto);
         UserCustomDishDto GetByBaseDishAndUser(int baseDishId, int userId);
     }
     public class UserCustomDishService : IUserCustomDishService
@@ -22,20 +22,35 @@ namespace WebDiet.Server.Services
             _mapper = mapper;
         }
 
-        public UserCustomDishDto GetById(int id)
+        public DishDto GetById(int id)
         {
             var userCustomDish = _context.UserCustomDishes
                 .Include(ci => ci.CustomIngredients)
                 .ThenInclude(i => i.Ingredient)
                  .FirstOrDefault(d => d.Id == id);
-
+            var ingredients = _context.Ingredients.ToList();
             if (userCustomDish == null)
             {
                 throw new NotFoundException("Dish not found");
             }
 
             var userCustomDishDto = _mapper.Map<UserCustomDishDto>(userCustomDish);
-            return userCustomDishDto;
+
+
+            var dishDto = new DishDto
+            {
+                Id = id,
+                Name = userCustomDish.Name,
+                Description = userCustomDish.Description,
+                Ingredients = userCustomDish.CustomIngredients.Select(ci => new IngredientDto
+                {
+                    Id = ci.IngredientId,
+                    Quantity = ci.Quantity,
+                    Name = ingredients.FirstOrDefault(i=> i.Id == ci.IngredientId).Name,
+                }).ToList(),
+            };
+
+            return dishDto;
         }
 
         public UserCustomDishDto GetByBaseDishAndUser(int baseDishId, int userId)
@@ -78,7 +93,9 @@ namespace WebDiet.Server.Services
                         UserCustomDishId = userCustomDish.Id,
                         IngredientId = ingredient.IngredientId,
                         Ingredient = ingredientEntity, // Add this line
-                        Quantity = ingredient.Quantity
+                        Quantity = ingredient.Quantity,
+
+
                     };
 
                     _context.Set<UserDishIngredient>().Add(userDishIngredient);
