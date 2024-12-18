@@ -9,7 +9,7 @@ namespace WebDiet.Server.Services
     public interface IUserCustomDishService
     {
         int Create(UserCustomDishDto dto, int userId);
-        UserCustomDishDto GetById(int dto);
+        DishDto GetById(int dto);
         UserCustomDishDto GetByBaseDishAndUser(int baseDishId, int userId);
         void Update(int id, UserCustomDishDto dto, int userId);
     }
@@ -22,16 +22,6 @@ namespace WebDiet.Server.Services
             _context = context;
             _mapper = mapper;
         }
-        public void Update(int id, UserCustomDishDto updatedDish, int userId)
-        {
-            var userCustomDish = _context.UserCustomDishes
-                .Include(ucd => ucd.CustomIngredients)
-                .FirstOrDefault(ucd => ucd.Id == id && ucd.UserId == userId);
-
-            if (userCustomDish == null)
-            {
-                throw new NotFoundException("User custom dish not found");
-            }
 
 
             userCustomDish.Name = updatedDish.Name ?? userCustomDish.Name;
@@ -86,14 +76,29 @@ namespace WebDiet.Server.Services
                 .Include(ci => ci.CustomIngredients)
                 .ThenInclude(i => i.Ingredient)
                  .FirstOrDefault(d => d.Id == id);
-
+            var ingredients = _context.Ingredients.ToList();
             if (userCustomDish == null)
             {
                 throw new NotFoundException("Dish not found");
             }
 
             var userCustomDishDto = _mapper.Map<UserCustomDishDto>(userCustomDish);
-            return userCustomDishDto;
+
+
+            var dishDto = new DishDto
+            {
+                Id = id,
+                Name = userCustomDish.Name,
+                Description = userCustomDish.Description,
+                Ingredients = userCustomDish.CustomIngredients.Select(ci => new IngredientDto
+                {
+                    Id = ci.IngredientId,
+                    Quantity = ci.Quantity,
+                    Name = ingredients.FirstOrDefault(i=> i.Id == ci.IngredientId).Name,
+                }).ToList(),
+            };
+
+            return dishDto;
         }
 
         public UserCustomDishDto GetByBaseDishAndUser(int baseDishId, int userId)
