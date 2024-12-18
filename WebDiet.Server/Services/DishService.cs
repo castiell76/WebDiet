@@ -28,18 +28,59 @@ namespace WebDiet.Server.Services
         }
         public void Update(int id, DishDto updatedDish)
         {
-            var dish = _context.Dishes.FirstOrDefault(x => x.Id == id);
+            var dish = _context.Dishes
+                .Include(d=>d.DishIngredients)
+                .Include(d=>d.DishAllergens)
+                .FirstOrDefault(x => x.Id == id);
             if (dish == null) throw new NotFoundException("Dish not found");
 
-
-            //TODO CALCULATE NUTRITION VALUES
             dish.Name = updatedDish.Name ?? dish.Name;
-
-            //dish.Protein = updatedDish.Protein ?? dish.Protein;
-            //dish.Carbo = updatedDish.Carbo ?? dish.Carbo;
-            //dish.Fat = updatedDish.Fat ?? dish.Fat;
-            //dish.KCal = updatedDish.KCal ?? dish.KCal;
             dish.Description = updatedDish.Description ?? dish.Description;
+            dish.Protein = 0;
+            dish.Carbo = 0;
+            dish.Fat = 0;
+            dish.Kcal = 0;
+            dish.DishIngredients = null;
+            _context.DishIngredients.RemoveRange(dish.DishIngredients);
+            _context.DishAllergens.RemoveRange(dish.DishAllergens);
+
+            dish.DishIngredients = updatedDish.Ingredients.Select(ingredient => new DishIngredient
+            {
+                IngredientId = ingredient.Id,
+                Quantity = ingredient.Quantity
+            }).ToList();
+
+            var ingredientIds = dish.DishIngredients.Select(di => di.IngredientId).ToList();
+            var ingredients = _context.Ingredients
+                .Include(i => i.IngredientAllergens)
+                    .ThenInclude(ia => ia.Allergen)
+                .Where(i => ingredientIds.Contains(i.Id))
+                .ToList();
+
+            var uniqueAllergenIds = new HashSet<int>();
+
+            foreach (var dishIngredient in dish.DishIngredients)
+            {
+                var ingredient = ingredients.First(i => i.Id == dishIngredient.IngredientId);
+
+
+                dish.Kcal += (dishIngredient.Quantity * ingredient.KCal / 100);
+                dish.Protein += (dishIngredient.Quantity * ingredient.Protein / 100);
+                dish.Carbo += (dishIngredient.Quantity * ingredient.Carbo / 100);
+                dish.Fat += (dishIngredient.Quantity * ingredient.Fat / 100);
+
+                foreach (var ingredientAllergen in ingredient.IngredientAllergens)
+                {
+                    if (uniqueAllergenIds.Add(ingredientAllergen.AllergenId))
+                    {
+                        dish.DishAllergens.Add(new DishAllergen
+                        {
+                            AllergenId = ingredientAllergen.AllergenId
+                        });
+                    }
+                }
+            }
+
 
             _context.SaveChanges();
 

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+ï»¿import React, { useState, useEffect } from 'react';
 import { Button, Card, Modal, Form, Dropdown, InputGroup } from 'react-bootstrap';
 
 function MealCard({ mealType, description, imagePath, meals, onMealSelect }) {
@@ -20,7 +20,7 @@ function MealCard({ mealType, description, imagePath, meals, onMealSelect }) {
     const [originalIngredients, setOriginalIngredients] = useState([]);
     const [modalMode, setModalMode] = useState('replace');
     const [userCustomDish, setUserCustomDish] = useState({
-        name: "marek",
+        name: "",
         baseDishId: "",
         customIngredients: [],
     });
@@ -28,7 +28,7 @@ function MealCard({ mealType, description, imagePath, meals, onMealSelect }) {
     useEffect(() => {
         if (mealDetails) {
             setLocalIngredients(mealDetails.ingredients);
-            console.log("!!!!!!!",mealDetails);
+            console.log("!!!!!!!", mealDetails);
             //setOriginalIngredients(JSON.parse(JSON.stringify(mealDetails.ingredients)));
             setHasChanges(false);
         }
@@ -169,10 +169,7 @@ function MealCard({ mealType, description, imagePath, meals, onMealSelect }) {
 
         try {
             let mealData;
-            console.log("usercustomdish", userCustomDish);
-            console.log("basedishId", userCustomDish.baseDishId);
-            console.log("dishid", selectedMeal.id)
-            console.log("localingredients: ", localIngredients);
+
 
             if (userCustomDish && userCustomDish.baseDishId === selectedMeal.id) {
 
@@ -228,15 +225,15 @@ function MealCard({ mealType, description, imagePath, meals, onMealSelect }) {
         <Modal show={showIngredientModal} onHide={() => setShowIngredientModal(false)}>
             <Modal.Header closeButton>
                 <Modal.Title>
-                    {modalMode === 'add' ? 'Dodaj nowy sk³adnik' : 'Wybierz nowy sk³adnik'}
+                    {modalMode === 'add' ? 'Dodaj nowy skÂ³adnik' : 'Wybierz nowy skÂ³adnik'}
                 </Modal.Title>
             </Modal.Header>
             <Modal.Body>
                 <Form.Group>
-                    <Form.Label>Dostêpne sk³adniki</Form.Label>
+                    <Form.Label>DostÃªpne skÂ³adniki</Form.Label>
                     <div style={{ maxHeight: '300px', overflowY: 'auto' }}>
                         {availableIngredients
-                            // Opcjonalnie: filtruj sk³adniki, które ju¿ s¹ na liœcie podczas dodawania
+                            // Opcjonalnie: filtruj skÂ³adniki, ktÃ³re juÂ¿ sÂ¹ na liÂœcie podczas dodawania
                             .filter(ingredient =>
                                 modalMode === 'replace' ||
                                 !localIngredients.some(local => local.id === ingredient.id)
@@ -267,7 +264,7 @@ function MealCard({ mealType, description, imagePath, meals, onMealSelect }) {
         return (
             <div>
                 <h3>{mealDetails.name}</h3>
-                <p>Lista sk³adników:</p>
+                <p>Lista skÂ³adnikÃ³w:</p>
                 <div>
                     <ul className="list-unstyled">
                         {Array.isArray(localIngredients) && localIngredients.map((ingredient) => (
@@ -288,13 +285,13 @@ function MealCard({ mealType, description, imagePath, meals, onMealSelect }) {
                                             handleReplaceIngredient(ingredient.id);
                                         }}
                                     >
-                                        Zamieñ
+                                        ZamieÃ±
                                     </Button>
                                     <Button
                                         variant="danger"
                                         onClick={() => handleRemoveIngredient(ingredient.id)}
                                     >
-                                        Usuñ
+                                        UsuÃ±
                                     </Button>
                                 </InputGroup>
                             </li>
@@ -305,7 +302,7 @@ function MealCard({ mealType, description, imagePath, meals, onMealSelect }) {
                         onClick={handleAddIngredient}
                         className="mt-3"
                     >
-                        Dodaj nowy sk³adnik
+                        Dodaj nowy skÂ³adnik
                     </Button>
                 </div>
                 <p><strong>Description:</strong> {mealDetails.description || 'No description available'}</p>

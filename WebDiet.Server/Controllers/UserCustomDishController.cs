@@ -14,6 +14,32 @@ namespace WebDiet.Server.Controllers
         {
             _service = service;
         }
+
+        [HttpPut("{id}")]
+
+        public ActionResult Update(int id, UserCustomDishDto dto)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
+            foreach (var claim in User.Claims)
+            {
+                Console.WriteLine($"Claim Type: {claim.Type}, Value: {claim.Value}");
+            }
+            if (userIdClaim == null)
+            {
+                return Unauthorized("User ID not found in token.");
+            }
+
+            int userId = int.Parse(userIdClaim.Value);
+
+            _service.Update(id, dto, userId);
+            return Ok();
+
+        }
         [HttpPost]
         public ActionResult Create([FromBody] UserCustomDishDto dto)
         {

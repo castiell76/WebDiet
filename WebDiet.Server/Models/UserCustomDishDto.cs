@@ -5,7 +5,7 @@ namespace WebDiet.Server.Models
     public class UserCustomDishDto
     {
         public string? Name { get; set; }
-        public int BaseDishId { get; set; }
+        public int? BaseDishId { get; set; }
         public string? Description { get; set; }
         public List<string>? Allergens { get; set; }
         public double? Kcal { get; set; }
