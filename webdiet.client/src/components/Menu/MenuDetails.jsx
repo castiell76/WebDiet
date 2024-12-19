@@ -7,15 +7,21 @@ export default function MenuDetails() {
 
 
     useEffect(() => {
-        fetch(`/api/menu/${id}`)
 
-            .then((response) => response.json())
+        fetch(`/api/menu/${id}`)
+            .then((response) => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                return response.json();
+            })
             .then((data) => {
                 console.log('Fetched menu:', data);
                 setMenu(data);
             })
             .catch((error) => console.error('Error:', error));
     }, [id]);
+
 
 
     if (!menu) {

@@ -151,13 +151,22 @@ export default function AddMenu({ showToast }) {
         try {
             const token = localStorage.getItem("jwtToken");
 
+            const transformedData = {
+                ...formData,
+                dishes: formData.dishes.map(dish => ({
+                    type: dish.type,
+                    dishId: dish.id, 
+
+                }))
+            };
+
             const response = await fetch("/api/menu", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
                     "Authorization": `Bearer ${token}`
                 },
-                body: JSON.stringify(formData),
+                body: JSON.stringify(transformedData),
             });
 
 

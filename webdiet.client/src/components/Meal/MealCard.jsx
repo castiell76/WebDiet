@@ -17,7 +17,6 @@ function MealCard({ mealType, description, imagePath, meals, onMealSelect }) {
     const [localIngredients, setLocalIngredients] = useState([]);
     const [selectedIngredientToReplace, setSelectedIngredientToReplace] = useState([]);
     const [hasChanges, setHasChanges] = useState(false);
-    const [originalIngredients, setOriginalIngredients] = useState([]);
     const [modalMode, setModalMode] = useState('replace');
     const [userCustomDish, setUserCustomDish] = useState({
         name: "",
@@ -28,7 +27,6 @@ function MealCard({ mealType, description, imagePath, meals, onMealSelect }) {
     useEffect(() => {
         if (mealDetails) {
             setLocalIngredients(mealDetails.ingredients);
-            console.log("!!!!!!!", mealDetails);
             //setOriginalIngredients(JSON.parse(JSON.stringify(mealDetails.ingredients)));
             setHasChanges(false);
         }
@@ -110,6 +108,7 @@ function MealCard({ mealType, description, imagePath, meals, onMealSelect }) {
                     quantity: ingredient.quantity
                 })),
                 baseDishId: selectedMeal.id,
+
             };
 
             const response = await fetch('/api/usercustomdish', {
@@ -139,7 +138,6 @@ function MealCard({ mealType, description, imagePath, meals, onMealSelect }) {
             setShowModalDetail(false);
         } catch (error) {
             console.error('Error saving changes:', error);
-            // You might want to show an error message to the user here
         }
     };
 

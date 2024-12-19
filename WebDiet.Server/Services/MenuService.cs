@@ -99,13 +99,13 @@ namespace WebDiet.Server.Services
                     {
                         Dish = dish,
                         Menu = menu,
-                        Type = "some type",
+                        Type = dishDto.Type,
                         User = _context.Users.FirstOrDefault(u => u.UserId == userId)
                     };
                     menu.DishesMenu.Add(dishMenu);
 
                     var uniqueAllergenIds = new HashSet<int>();
-                    //????
+
                     foreach (var dishIngredient in dish.DishIngredients)
                     {
                         var ingredient = ingredients.First(i => i.Id == dishIngredient.IngredientId);

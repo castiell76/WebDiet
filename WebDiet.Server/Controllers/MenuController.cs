@@ -70,7 +70,7 @@ namespace WebDiet.Server.Controllers
 
         // GET api/<ValuesController>/5
         [HttpGet("{id}")]
-        public ActionResult<IEnumerable<MenuDto>> Get([FromRoute] int id)
+        public ActionResult<MenuDto> Get([FromRoute] int id)
         {
             var menu = _service.GetById(id);
             return Ok(menu);
