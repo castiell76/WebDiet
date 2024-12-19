@@ -8,11 +8,22 @@ namespace WebDiet.Server.Mappers
     {
         public MenuMappingProfile()
         {
-            CreateMap<Menu, MenuDto>();
-            CreateMap<DishMenu, DishMenuDto>();
-            CreateMap<MenuAllergen, MenuAllergenDto>()
-                .ForMember(dest => dest.Name,
-                          opt => opt.MapFrom(src => src.Allergen.Name));
+            CreateMap<Menu, MenuDto>()
+            .ForMember(dest => dest.Dishes,
+                      opt => opt.MapFrom(src => src.DishesMenu))
+            .ReverseMap();
+
+            CreateMap<DishMenu, DishMenuDto>()
+                .ForMember(dest => dest.DishId,
+                          opt => opt.MapFrom(src => src.DishId))
+                .ForMember(dest => dest.Dish,
+                          opt => opt.MapFrom(src => src.Dish))
+                .ForMember(dest => dest.UserCustomDishId,
+                          opt => opt.MapFrom(src => src.UserCustomDishId))
+                .ForMember(dest => dest.UserCustomDish,
+                          opt => opt.MapFrom(src => src.UserCustomDish))
+                .ReverseMap();
+
         }
     }
 }

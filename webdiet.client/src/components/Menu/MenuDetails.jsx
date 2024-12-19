@@ -39,19 +39,19 @@ export default function MenuDetails() {
             <h2>Meals</h2>
             <ul>
                 {menu.dishes.map((meal) => (
-                    <li key={meal.id}>
-                        {meal.name} 
+                    <li key={meal.dish.id}>
+                        {meal.dish.name} 
                     </li>
                 ))}
             </ul>
             <h2>Allergens:</h2>
-            <ul>
-                {menu.allergens.map((allergen) => (
-                    <li key={allergen.id}>
-                        {allergen}
-                    </li>
-                ))}
-            </ul>
+            {/*<ul>*/}
+            {/*    {menu.allergens.map((allergen) => (*/}
+            {/*        <li key={allergen.id}>*/}
+            {/*            {allergen}*/}
+            {/*        </li>*/}
+            {/*    ))}*/}
+            {/*</ul>*/}
         </div>
     );
 }
