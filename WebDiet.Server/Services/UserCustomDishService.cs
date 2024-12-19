@@ -168,9 +168,17 @@ namespace WebDiet.Server.Services
                     _context.Set<UserDishIngredient>().Add(userDishIngredient);
                 }
 
-                _context.SaveChanges();
+                
+            }
+            else if(dto.Allergens != null && dto.Allergens.Any())
+            {
+                foreach(var allergen in dto.Allergens)
+                {
+                    userCustomDish.Allergens.Add(allergen);
+                }
             }
 
+            _context.SaveChanges();
             return userCustomDish.Id;
         }
     }

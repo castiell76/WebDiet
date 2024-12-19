@@ -45,13 +45,13 @@ export default function MenuDetails() {
                 ))}
             </ul>
             <h2>Allergens:</h2>
-            {/*<ul>*/}
-            {/*    {menu.allergens.map((allergen) => (*/}
-            {/*        <li key={allergen.id}>*/}
-            {/*            {allergen}*/}
-            {/*        </li>*/}
-            {/*    ))}*/}
-            {/*</ul>*/}
+            <ul>
+                {menu.menuAllergens.map((allergen) => (
+                    <li key={allergen.allergenId}>
+                        {allergen.name }
+                    </li>
+                ))}
+            </ul>
         </div>
     );
 }

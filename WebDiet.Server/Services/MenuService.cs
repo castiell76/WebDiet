@@ -70,13 +70,24 @@ namespace WebDiet.Server.Services
 
         public int Create(MenuDto dto, int userId)
         {
-            var menu = _mapper.Map<Menu>(dto);
-            menu.UserId = userId;
+            var user = _context.Users.FirstOrDefault(u => u.UserId == userId)
+                ?? throw new Exception("User not found");
 
-            // Najpierw dodajemy menu do kontekstu i zapisujemy,
-            // żeby uzyskać prawidłowe Id dla menu
+            var menu = new Menu
+            {
+                UserId = userId,
+                Description = dto.Description,
+                Date = dto.Date,
+                Kcal =0,
+                Carbo =0,
+                Protein =0,
+                Fat =0,
+            };
+
             _context.Menus.Add(menu);
             _context.SaveChanges();
+
+            var processedAllergens = new HashSet<int>(); // Zbiór do śledzenia już dodanych alergenów
 
             foreach (var dishDto in dto.Dishes)
             {
@@ -87,51 +98,45 @@ namespace WebDiet.Server.Services
                     .ThenInclude(da => da.Allergen)
                     .FirstOrDefault(d => d.Id == dishDto.DishId);
 
+                menu.Kcal += dish.Kcal;
+                menu.Protein += dish.Protein;
+                menu.Carbo += dish.Carbo;
+                menu.Fat += dish.Fat;
+
                 if (dish != null)
                 {
-                    // Sprawdzamy czy już istnieje takie powiązanie
-                    var existingDishMenu = _context.DishMenus
-                        .FirstOrDefault(dm => dm.MenuId == menu.Id && dm.DishId == dish.Id);
-
-                    if (existingDishMenu == null)
+                    var dishMenu = new DishMenu
                     {
-                        var dishMenu = new DishMenu
-                        {
-                            DishId = dish.Id,  // Używamy Id zamiast nawigacji
-                            MenuId = menu.Id,  // Używamy Id zamiast nawigacji
-                            Type = dishDto.Type,
-                            UserId = userId    // Zakładam, że mamy kolumnę UserId
-                        };
-                        _context.DishMenus.Add(dishMenu);
-                    }
+                        MenuId = menu.Id,
+                        DishId = dish.Id,
+                        Type = dishDto.Type,
+                        UserId = userId,
+                        User = user
+                    };
 
+                    _context.DishMenus.Add(dishMenu);
+
+                    // Pobieramy składniki
                     var ingredientIds = dish.DishIngredients.Select(di => di.IngredientId).ToList();
                     var ingredients = _context.Ingredients
                         .Include(i => i.IngredientAllergens)
-                        .ThenInclude(ia => ia.Allergen)
                         .Where(i => ingredientIds.Contains(i.Id))
                         .ToList();
 
-                    var uniqueAllergenIds = new HashSet<int>();
-                    foreach (var dishIngredient in dish.DishIngredients)
+                    // Zbieramy alergeny ze składników
+                    foreach (var ingredient in ingredients)
                     {
-                        var ingredient = ingredients.First(i => i.Id == dishIngredient.IngredientId);
-                        foreach (var ingredientAllergen in ingredient.IngredientAllergens)
+                        foreach (var allergen in ingredient.IngredientAllergens)
                         {
-                            if (uniqueAllergenIds.Add(ingredientAllergen.AllergenId))
-                            {
-                                var existingMenuAllergen = _context.MenuAllergens
-                                    .FirstOrDefault(ma => ma.MenuId == menu.Id &&
-                                                        ma.AllergenId == ingredientAllergen.AllergenId);
 
-                                if (existingMenuAllergen == null)
+                            if (processedAllergens.Add(allergen.AllergenId))
+                            {
+                                var menuAllergen = new MenuAllergen
                                 {
-                                    _context.MenuAllergens.Add(new MenuAllergen
-                                    {
-                                        AllergenId = ingredientAllergen.AllergenId,
-                                        MenuId = menu.Id
-                                    });
-                                }
+                                    MenuId = menu.Id,
+                                    AllergenId = allergen.AllergenId
+                                };
+                                _context.MenuAllergens.Add(menuAllergen);
                             }
                         }
                     }
