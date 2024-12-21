@@ -40,7 +40,6 @@ namespace WebDiet.Server.Services
             dish.Carbo = 0;
             dish.Fat = 0;
             dish.Kcal = 0;
-            dish.DishIngredients = null;
             _context.DishIngredients.RemoveRange(dish.DishIngredients);
             _context.DishAllergens.RemoveRange(dish.DishAllergens);
 

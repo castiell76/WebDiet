@@ -6,6 +6,7 @@ import IngredientDetails from "./components/Ingredient/IngredientDetails";
 import AddMeal from "./components/Meal/AddMeal"
 import MealsList from "./components/Meal/MealsList"
 import MealDetails from "./components/Meal/MealDetails"
+import MealView from "./components/Meal/MealView"
 import { AnimatePresence, motion } from "framer-motion";
 import 'bootstrap/dist/css/bootstrap.min.css';
 import './App.css';
@@ -15,6 +16,7 @@ import Login from "./components/Account/Login";
 import { useAuth } from  "./contexts/AuthContext"
 import AddMenu from "./components/Menu/AddMenu";
 import MenusList from "./components/Menu/MenusList";
+
 
 import MenuDetails from "./components/Menu/MenuDetails";
 function App() {
@@ -61,7 +63,7 @@ function AnimatedApp({ showToast }) {
                     />
                     <Route path="/meal/:id" element={
                         <PageTransition>
-                            <MealDetails showToast={showToast} />
+                            <MealView showToast={showToast} />
                         </PageTransition>}
                     />
                     <Route path="/meals/add" element={
