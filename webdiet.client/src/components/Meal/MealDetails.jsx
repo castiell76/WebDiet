@@ -138,15 +138,15 @@ const MealDetails = ({ mealId, isCustomDish, customDishId, onClose, onSave }) =>
                     })),
                     baseDishId: mealId,
                 } : {
-                        name: mealDetails?.name || `Custom ${mealDetails.name}`,
+                    name: mealDetails?.name || `Custom ${mealDetails.name}`,
                     ingredients: localIngredients.map(ingredient => ({
                         Id: ingredient.id,
                         quantity: ingredient.quantity
                     })),
-                        baseDishId: mealId,
-
+                    baseDishId: mealId,
                 })
             };
+
             if (isCustomDish) {
                 const response = await fetch('/api/usercustomdish', {
                     method: 'POST',
@@ -155,17 +155,18 @@ const MealDetails = ({ mealId, isCustomDish, customDishId, onClose, onSave }) =>
                         "Authorization": `Bearer ${token}`
                     },
                     body: JSON.stringify(updatedDish)
-
                 });
+
                 if (!response.ok) {
                     throw new Error(`HTTP error! status: ${response.status}`);
                 }
-                //const savedDishId = await response.json();
-                //onSave && onSave(savedDishId);
-                setHasChanges(false);
-                onClose();
-            } else {
 
+                const savedDish = await response.json();
+                setHasChanges(false);
+                // Przekazujemy zaktualizowane dane do rodzica
+                console.log("przekazuje saveddish z mealdetails",savedDish)
+                onSave && onSave(mealId);
+            } else {
                 const response = await fetch(`/api/dish/${updatedDish.baseDishId}`, {
                     method: 'PUT',
                     headers: {
@@ -174,14 +175,16 @@ const MealDetails = ({ mealId, isCustomDish, customDishId, onClose, onSave }) =>
                     },
                     body: JSON.stringify(updatedDish)
                 });
+
                 if (!response.ok) {
                     throw new Error(`HTTP error! status: ${response.status}`);
                 }
-/*                onSave && onSave(savedDishId);*/
-                setHasChanges(false);
-                onClose();
-            }
 
+                const savedDish = await response.json();
+                setHasChanges(false);
+                // Przekazujemy zaktualizowane dane do rodzica
+                onSave && onSave(savedDish);
+            }
         } catch (error) {
             console.error('Error saving changes:', error);
             setError('Failed to save changes');

@@ -22,7 +22,20 @@ namespace WebDiet.Server.Controllers
 
         public ActionResult Update(int id, MenuDto dto)
         {
-            _service.Update(id, dto);
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
+
+            foreach (var claim in User.Claims)
+            {
+                Console.WriteLine($"Claim Type: {claim.Type}, Value: {claim.Value}");
+            }
+            if (userIdClaim == null)
+            {
+                return Unauthorized("User ID not found in token.");
+            }
+
+            int userId = int.Parse(userIdClaim.Value);
+
+            _service.Update(id, dto, userId);
             return Ok();
 
         }
