@@ -8,7 +8,7 @@ namespace WebDiet.Server.Services
 {
     public interface IUserCustomDishService
     {
-        int Create(UserCustomDishDto dto, int userId);
+        UserCustomDishDto Create(UserCustomDishDto dto, int userId);
         DishDto GetById(int dto);
         UserCustomDishDto GetByBaseDishAndUser(int baseDishId, int userId);
         void Update(int id, UserCustomDishDto dto, int userId);
@@ -25,7 +25,7 @@ namespace WebDiet.Server.Services
 
         public void Update(int id, UserCustomDishDto updatedDish, int userId)
         {
-            // Pobranie istniejącego dania użytkownika wraz z jego składnikami
+
             var userCustomDish = _context.UserCustomDishes
                 .Include(ucd => ucd.CustomIngredients)
                 .FirstOrDefault(ucd => ucd.Id == id && ucd.UserId == userId);
@@ -127,7 +127,7 @@ namespace WebDiet.Server.Services
 
             return _mapper.Map<UserCustomDishDto>(userCustomDish);
         }
-        public int Create(UserCustomDishDto dto, int userId)
+        public UserCustomDishDto Create(UserCustomDishDto dto, int userId)
         {
             var userCustomDish = new UserCustomDish
             {
@@ -179,7 +179,9 @@ namespace WebDiet.Server.Services
             }
 
             _context.SaveChanges();
-            return userCustomDish.Id;
+
+            var userCustomDishDto = _mapper.Map<UserCustomDishDto>(userCustomDish);
+            return userCustomDishDto;
         }
     }
 }

@@ -14,7 +14,7 @@ namespace WebDiet.Server.Services
         int Create(MenuDto menu, int userId);
         void Delete(int id);
 
-        void Update(int id, MenuDto menu, int userId);
+        MenuDto Update(int id, MenuDto menu, int userId);
     }
     public class MenuService : IMenuService
     {
@@ -27,7 +27,7 @@ namespace WebDiet.Server.Services
             _mapper = mapper;
             _logger = logger;
         }
-        public void Update(int id, MenuDto updatedMenu, int userId)
+        public MenuDto Update(int id, MenuDto updatedMenu, int userId)
         {
             var user = _context.Users.FirstOrDefault(u => u.UserId == userId)
                 ?? throw new Exception("User not found");
@@ -38,27 +38,37 @@ namespace WebDiet.Server.Services
                 .FirstOrDefault(i => i.Id == id)
                 ?? throw new Exception("Menu not found");
 
-            // Reset wartości w menu
+
             menu.Protein = 0;
             menu.Carbo = 0;
             menu.Fat = 0;
             menu.Kcal = 0;
             menu.Description = updatedMenu.Description;
 
-            // Usuwanie istniejących rekordów
+
             _context.DishMenus.RemoveRange(menu.DishesMenu);
             _context.MenuAllergens.RemoveRange(menu.MenuAllergens);
+            _context.SaveChanges();
+
+            _context.Entry(menu).Reload();
+            menu.DishesMenu = new List<DishMenu>();
+            menu.MenuAllergens = new List<MenuAllergen>();
+
 
             var processedAllergens = new HashSet<int>(); // Zbiór do śledzenia już dodanych alergenów
 
             foreach (var dishDto in updatedMenu.Dishes)
             {
-                var dish = _context.Dishes
+                var dish = dishDto.Dish;
+
+                var basedish = _context.Dishes
                     .Include(d => d.DishIngredients)
                     .ThenInclude(di => di.Ingredient)
                     .Include(d => d.DishAllergens)
                     .ThenInclude(da => da.Allergen)
                     .FirstOrDefault(d => d.Id == dishDto.DishId);
+
+                dish.Id = basedish.Id;
 
                 if (dish != null)
                 {
@@ -80,7 +90,8 @@ namespace WebDiet.Server.Services
                     _context.DishMenus.Add(dishMenu);
 
                     // Przetwarzanie alergenów
-                    var ingredientIds = dish.DishIngredients.Select(di => di.IngredientId).ToList();
+
+                    var ingredientIds = dish.Ingredients.Select(di => di.Id).ToList();
                     var ingredients = _context.Ingredients
                         .Include(i => i.IngredientAllergens)
                         .Where(i => ingredientIds.Contains(i.Id))
@@ -98,6 +109,7 @@ namespace WebDiet.Server.Services
                                     AllergenId = allergen.AllergenId
                                 };
                                 _context.MenuAllergens.Add(menuAllergen);
+
                             }
                         }
                     }
@@ -105,6 +117,8 @@ namespace WebDiet.Server.Services
             }
 
             _context.SaveChanges();
+            var menuDto = _mapper.Map<MenuDto>(menu);
+            return menuDto;
         }
 
         public MenuDto GetById(int id)
@@ -177,7 +191,7 @@ namespace WebDiet.Server.Services
                         DishId = dish.Id,
                         Type = dishDto.Type,
                         UserId = userId,
-                        User = user
+                        User = user,
                     };
 
                     _context.DishMenus.Add(dishMenu);

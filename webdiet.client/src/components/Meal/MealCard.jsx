@@ -18,9 +18,9 @@ function MealCard({ mealType, description, imagePath, meals, onMealSelect }) {
         setShowModal(false);
     };
 
-    const handleSaveCustomDish = (customDishId) => {
+    const handleSaveCustomDish = (customDishData) => {
         setUserCustomDish({
-            id: customDishId,
+            id: customDishData.id,
             baseDishId: selectedMeal.id
         });
     };
@@ -103,7 +103,7 @@ function MealCard({ mealType, description, imagePath, meals, onMealSelect }) {
                     <MealDetails
                         mealId={selectedMeal?.id}
                         isCustomDish={!!userCustomDish}
-                        customDishId={userCustomDish?.id}
+                        customDishId={userCustomDish?.id} 
                         onClose={handleCloseDetail}
                         onSave={handleSaveCustomDish}
                     />

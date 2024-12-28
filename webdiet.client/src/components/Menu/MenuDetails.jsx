@@ -18,72 +18,13 @@ export default function MenuDetails() {
                 return response.json();
             })
             .then((data) => {
-                console.log('Fetched menu:', data);
                 setMenu(data);
+                console.log('Fetched menu:', data);
             })
             .catch((error) => console.error('Error:', error));
     }, [id]);
 
-    const mapToMenuDto = (menu, updatedDish, originalDishId) => {
-        console.log('SavedDish received:', updatedDish); // Debug log
-
-        // SprawdŸ czy updatedDish jest liczb¹ (ID) czy obiektem
-        const updatedDishId = typeof updatedDish === 'number' ? updatedDish : updatedDish?.id;
-
-        if (!updatedDishId) {
-            console.error('Invalid updatedDish:', updatedDish);
-            throw new Error('Updated dish must have an ID');
-        }
-
-        const menuDto = {
-            id: menu.id,
-            description: menu.description,
-            menuAllergens: menu.menuAllergens.map(allergen => ({
-                allergenId: allergen.allergenId,
-                name: allergen.name
-            })),
-            kcal: menu.kcal,
-            protein: menu.protein,
-            carbo: menu.carbo,
-            fat: menu.fat,
-            date: menu.date,
-            dishes: menu.dishes.map(d => {
-                if (d.dish.id === originalDishId) {
-                    return {
-                        dishId: updatedDishId, // U¿ywamy ID nowego dania
-                        type: d.type || 'Dinner', // Zachowujemy oryginalny typ lub ustawiamy domyœlny
-                        dish: typeof updatedDish === 'number' ? {
-                            // Jeœli mamy tylko ID, tworzymy minimalny obiekt
-                            id: updatedDishId,
-                            name: d.dish.name || '',
-                            description: '',
-                            ingredients: [],
-                            allergens: [],
-                            kcal: 0,
-                            protein: 0,
-                            carbo: 0,
-                            fat: 0
-                        } : {
-                            // Jeœli mamy pe³ny obiekt, u¿ywamy go
-                            ...updatedDish,
-                            id: updatedDishId // Upewniamy siê, ¿e ID jest ustawione
-                        }
-                    };
-                }
-
-                // Dla pozosta³ych dañ zachowujemy oryginaln¹ strukturê
-                return {
-                    dishId: d.dish.id,
-                    type: d.type || 'Dinner',
-                    dish: d.dish
-                };
-            })
-        };
-
-        console.log('Final mapped menuDto:', menuDto);
-        return menuDto;
-    };
-
+  
 
 
 
@@ -106,21 +47,22 @@ export default function MenuDetails() {
                         key={meal.dish.id}
                         mealId={meal.dish.id}
                         isCustomDish={true}
-                        onClose={() => navigate('/menus')}
+                        onClose={() => navigate(`/menu/${menu.id}`)}
                         onSave={async (savedDish) => {
-                            console.log('Received savedDish in onSave:', savedDish);
+                            // Obliczamy nowe wartoœci dla menu na podstawie zaktualizowanego dish
+                            const updatedMenuData = {
+                                ...menu,
+                                dishes: menu.dishes.map(d =>
+                                    d.dish.id === meal.dish.id
+                                        ? { ...d, dish: savedDish }
+                                        : d
+                                )
 
-                            if (!savedDish) {
-                                console.error('No savedDish received');
-                                return;
-                            }
-
+                            };
+                            console.log("updatedmenudata", updatedMenuData);
+                            // Aktualizujemy menu w API
                             try {
-                                const updatedMenuData = mapToMenuDto(menu, savedDish, meal.dish.id);
                                 const token = localStorage.getItem("jwtToken");
-
-                                console.log('Sending to API:', updatedMenuData);
-
                                 const menuResponse = await fetch(`/api/menu/${id}`, {
                                     method: 'PUT',
                                     headers: {
@@ -131,17 +73,12 @@ export default function MenuDetails() {
                                 });
 
                                 if (!menuResponse.ok) {
-                                    const errorText = await menuResponse.text();
-                                    console.error('Server Response Error:', {
-                                        status: menuResponse.status,
-                                        text: errorText
-                                    });
-                                    throw new Error(`Failed to update menu: ${menuResponse.status} - ${errorText}`);
+                                    throw new Error(`Failed to update menu: ${menuResponse.status}`);
                                 }
-
                                 const updatedMenu = await menuResponse.json();
                                 setMenu(updatedMenu);
-                                navigate('/menus');
+                                navigate(`/menu/${menu.id}`);
+                                console.log("updatedmenu,", updatedMenu);
                             } catch (error) {
                                 console.error('Error updating menu:', error);
                             }

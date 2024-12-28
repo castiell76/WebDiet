@@ -60,9 +60,9 @@ namespace WebDiet.Server.Controllers
 
             int userId = int.Parse(userIdClaim.Value);
 
-            var createdDishId = _service.Create(dto, userId);
+            var createdDish = _service.Create(dto, userId);
 
-            return Created($"/api/dishes/{dto.BaseDishId}", createdDishId);
+            return Created($"/api/dishes/{dto.BaseDishId}", createdDish);
         }
         [HttpGet("{id}")]
         public ActionResult<DishDto> Get([FromRoute] int id)

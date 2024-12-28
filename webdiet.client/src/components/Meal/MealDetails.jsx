@@ -11,19 +11,18 @@ const MealDetails = ({ mealId, isCustomDish, customDishId, onClose, onSave }) =>
     const [availableIngredients, setAvailableIngredients] = useState([]);
     const [selectedIngredientToReplace, setSelectedIngredientToReplace] = useState(null);
     const [modalMode, setModalMode] = useState('replace');
+    const [currentCustomDishId, setCurrentCustomDishId] = useState(customDishId);
+
+    useEffect(() => {
+        // Aktualizuj currentCustomDishId gdy zmienia się props
+        setCurrentCustomDishId(customDishId);
+    }, [customDishId]);
 
     useEffect(() => {
         if (mealId) {
             fetchMealDetails();
         }
-    }, [mealId, isCustomDish, customDishId]);
-
-    useEffect(() => {
-        if (mealDetails) {
-            setLocalIngredients(mealDetails.ingredients);
-            setHasChanges(false);
-        }
-    }, [mealDetails]);
+    }, [mealId, isCustomDish, currentCustomDishId]);
 
     const fetchMealDetails = async () => {
         setLoading(true);
@@ -31,8 +30,8 @@ const MealDetails = ({ mealId, isCustomDish, customDishId, onClose, onSave }) =>
 
         try {
             let response;
-            if (isCustomDish && customDishId) {
-                response = await fetch(`/api/usercustomdish/${customDishId}`);
+            if (isCustomDish && currentCustomDishId) {
+                response = await fetch(`/api/usercustomdish/${currentCustomDishId}`);
             } else {
                 response = await fetch(`/api/dish/${mealId}`);
             }
@@ -43,6 +42,7 @@ const MealDetails = ({ mealId, isCustomDish, customDishId, onClose, onSave }) =>
 
             const data = await response.json();
             setMealDetails(data);
+            setLocalIngredients(data.ingredients);
         } catch (err) {
             setError(err.message);
             console.error('Error fetching meal details:', err);
@@ -130,64 +130,53 @@ const MealDetails = ({ mealId, isCustomDish, customDishId, onClose, onSave }) =>
         try {
             const token = localStorage.getItem("jwtToken");
             const updatedDish = {
-                ...(isCustomDish ? {
-                    name: mealDetails?.name || `Custom ${mealDetails.name}`,
-                    customIngredients: localIngredients.map(ingredient => ({
-                        ingredientId: ingredient.id,
-                        quantity: ingredient.quantity
-                    })),
-                    baseDishId: mealId,
-                } : {
-                    name: mealDetails?.name || `Custom ${mealDetails.name}`,
-                    ingredients: localIngredients.map(ingredient => ({
-                        Id: ingredient.id,
-                        quantity: ingredient.quantity
-                    })),
-                    baseDishId: mealId,
-                })
+                name: mealDetails?.name || `Custom ${mealDetails.name}`,
+                baseDishId: mealId,
+                customIngredients: localIngredients.map(ingredient => ({
+                    ingredientId: ingredient.id,
+                    quantity: ingredient.quantity
+                }))
             };
 
-            if (isCustomDish) {
-                const response = await fetch('/api/usercustomdish', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        "Authorization": `Bearer ${token}`
-                    },
-                    body: JSON.stringify(updatedDish)
-                });
+            const method = currentCustomDishId ? 'PUT' : 'POST';
+            const url = currentCustomDishId
+                ? `/api/usercustomdish/${currentCustomDishId}`
+                : '/api/usercustomdish';
 
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
+            const response = await fetch(url, {
+                method: method,
+                headers: {
+                    'Content-Type': 'application/json',
+                    "Authorization": `Bearer ${token}`
+                },
+                body: JSON.stringify(updatedDish)
+            });
 
-                const savedDish = await response.json();
-                setHasChanges(false);
-                // Przekazujemy zaktualizowane dane do rodzica
-                console.log("przekazuje saveddish z mealdetails",savedDish)
-                onSave && onSave(mealId);
-            } else {
-                const response = await fetch(`/api/dish/${updatedDish.baseDishId}`, {
-                    method: 'PUT',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        "Authorization": `Bearer ${token}`
-                    },
-                    body: JSON.stringify(updatedDish)
-                });
-
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-
-                const savedDish = await response.json();
-                setHasChanges(false);
-                // Przekazujemy zaktualizowane dane do rodzica
-                onSave && onSave(savedDish);
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
             }
+
+            const savedDish = await response.json();
+
+            // Aktualizujemy lokalny stan nowymi danymi
+            setCurrentCustomDishId(savedDish.id);
+            setMealDetails(savedDish);
+            setLocalIngredients(savedDish.ingredients); // Dodane: aktualizacja składników
+            setHasChanges(false);
+
+            // Przekazujemy zaktualizowane dane do komponentu nadrzędnego
+            onSave && onSave({
+                ...savedDish,
+                isCustomDish: true,
+                originalMealId: mealId
+            });
+
+            // Odświeżamy dane po zapisie
+            await fetchMealDetails();
         } catch (error) {
             console.error('Error saving changes:', error);
-            setError('Failed to save changes');
+            setError('Failed to save changes: ' + error.message);
         }
     };
 
@@ -195,11 +184,13 @@ const MealDetails = ({ mealId, isCustomDish, customDishId, onClose, onSave }) =>
     if (error) return <div className="text-danger">Error: {error}</div>;
     if (!mealDetails) return null;
 
-    return (
+     return (
         <div>
             <h3>{mealDetails.name}</h3>
-            <div className="ingredients-list">
-                {localIngredients.map((ingredient) => (
+             <div className="ingredients-list">
+                 {console.log("lokalne:",localIngredients) }
+                 {localIngredients.map((ingredient) => (
+                    
                     <div key={ingredient.id} className="ingredient-item mb-3">
                         <div className="d-flex justify-content-between align-items-center">
                             <span>{ingredient.name}</span>
@@ -237,6 +228,17 @@ const MealDetails = ({ mealId, isCustomDish, customDishId, onClose, onSave }) =>
                 Add Ingredient
             </Button>
 
+            <div className="mt-4">
+                {hasChanges && (
+                    <Button variant="success" onClick={handleSave} className="me-2">
+                        Save Changes
+                    </Button>
+                )}
+                <Button variant="secondary" onClick={onClose}>
+                    Close
+                </Button>
+            </div>
+
             <Modal show={showIngredientModal} onHide={() => setShowIngredientModal(false)}>
                 <Modal.Header closeButton>
                     <Modal.Title>
@@ -271,17 +273,6 @@ const MealDetails = ({ mealId, isCustomDish, customDishId, onClose, onSave }) =>
                     </Button>
                 </Modal.Footer>
             </Modal>
-
-            <div className="mt-4">
-                {hasChanges && (
-                    <Button variant="success" onClick={handleSave} className="me-2">
-                        Save Changes
-                    </Button>
-                )}
-                <Button variant="secondary" onClick={onClose}>
-                    Close
-                </Button>
-            </div>
         </div>
     );
 };

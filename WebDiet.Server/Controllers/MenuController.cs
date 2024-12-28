@@ -35,8 +35,8 @@ namespace WebDiet.Server.Controllers
 
             int userId = int.Parse(userIdClaim.Value);
 
-            _service.Update(id, dto, userId);
-            return Ok();
+            var newMenuDto = _service.Update(id, dto, userId);
+            return Ok(newMenuDto);
 
         }
 
