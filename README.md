@@ -3,7 +3,7 @@
 ## **Summary**
 This project focuses on developing the backend of a diet planning web application. The goal is to demonstrate my skills in **C#**, **ASP.NET Core**, and **Entity Framework** while building a scalable and efficient **REST API**. The API provides comprehensive functionalities to manage users, meals, ingredients, and allergens. 
 
-While the frontend is functional, it remains a work in progress, reflecting my early journey into frontend development.
+Please keep in mind this is a very alpha state of the API. I still working on it in my free time. Creating a frontend is also new to me, so it just has basic functionality for now.
 
 ### **Key highlights**:
 - Designing a robust backend architecture using **ASP.NET Core**.
