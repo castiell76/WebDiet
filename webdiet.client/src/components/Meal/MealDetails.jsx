@@ -14,7 +14,6 @@ const MealDetails = ({ mealId, isCustomDish, customDishId, onClose, onSave }) =>
     const [currentCustomDishId, setCurrentCustomDishId] = useState(customDishId);
 
     useEffect(() => {
-        // Aktualizuj currentCustomDishId gdy zmienia się props
         setCurrentCustomDishId(customDishId);
     }, [customDishId]);
 
@@ -159,20 +158,19 @@ const MealDetails = ({ mealId, isCustomDish, customDishId, onClose, onSave }) =>
 
             const savedDish = await response.json();
 
-            // Aktualizujemy lokalny stan nowymi danymi
+
             setCurrentCustomDishId(savedDish.id);
             setMealDetails(savedDish);
-            setLocalIngredients(savedDish.ingredients); // Dodane: aktualizacja składników
+            setLocalIngredients(savedDish.ingredients); 
             setHasChanges(false);
 
-            // Przekazujemy zaktualizowane dane do komponentu nadrzędnego
             onSave && onSave({
                 ...savedDish,
                 isCustomDish: true,
                 originalMealId: mealId
             });
 
-            // Odświeżamy dane po zapisie
+
             await fetchMealDetails();
         } catch (error) {
             console.error('Error saving changes:', error);

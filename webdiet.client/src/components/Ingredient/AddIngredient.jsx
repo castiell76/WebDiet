@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Form, Button, Container } from 'react-bootstrap';
 import Dropdown from 'react-bootstrap/Dropdown';
 
-// Custom Toggle
+
 const CustomToggle = React.forwardRef(({ children, onClick }, ref) => (
     <Button
         ref={ref}
@@ -16,7 +16,7 @@ const CustomToggle = React.forwardRef(({ children, onClick }, ref) => (
 ));
 CustomToggle.displayName = 'CustomToggle';
 
-// Custom Menu
+
 const CustomMenu = React.forwardRef(
     ({ children, style, className, 'aria-labelledby': labeledBy }, ref) => {
         const [value, setValue] = useState('');
@@ -47,7 +47,7 @@ const CustomMenu = React.forwardRef(
 );
 CustomMenu.displayName = 'CustomMenu';
 export default function AddIngredient() {
-    // Obs³uga formularza
+
     const [formData, setFormData] = useState({
         name: '',
         description: '',
@@ -63,7 +63,7 @@ export default function AddIngredient() {
     };
     const [allergens, setAllergens] = useState([]);
 
-    // Pobieranie sk³adników z API
+
     useEffect(() => {
         fetch("/api/ingredients/Allergen")
             .then((response) => response.json())
@@ -73,13 +73,13 @@ export default function AddIngredient() {
             .catch((error) => console.error("Error:", error));
     }, []);
 
-    // Obs³uga zmian w polach formularza
+
     const handleChange = (e) => {
         const { name, value } = e.target;
         setFormData({ ...formData, [name]: value });
     };
 
-    // Dodawanie sk³adnika
+
     const addAllergen = (allergen) => {
         setFormData((prevData) => ({
             ...prevData,
@@ -87,14 +87,14 @@ export default function AddIngredient() {
         }));
     };
 
-    // Usuwanie sk³adnika
+
     const removeAllergen = (id) => {
         setFormData((prevData) => ({
             ...prevData,
             allergens: prevData.allergens.filter((allergen) => allergen.id !== id),
         }));
     };
-    // Obs³uga przesy³ania danych
+
     const handleSubmit = async (e) => {
         e.preventDefault();
 

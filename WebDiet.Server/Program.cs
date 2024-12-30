@@ -59,6 +59,7 @@ builder.Services.AddScoped<IAuthorizationHandler, ResourceOperationRequirementHa
 builder.Services.AddScoped<IIngredientService, IngredientService>();
 builder.Services.AddScoped<IDishService, DishService>();
 builder.Services.AddScoped<IAllergenService, AllergenService>();
+builder.Services.AddScoped<ICalculatorService, CalculatorService>();
 builder.Services.AddScoped<IMenuService, MenuService>();
 builder.Services.AddScoped<IAccountService, AccountService>();
 builder.Services.AddScoped<IUserCustomDishService, UserCustomDishService>();

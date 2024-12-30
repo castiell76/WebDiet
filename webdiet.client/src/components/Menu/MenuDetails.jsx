@@ -49,7 +49,7 @@ export default function MenuDetails() {
                         isCustomDish={true}
                         onClose={() => navigate(`/menu/${menu.id}`)}
                         onSave={async (savedDish) => {
-                            // Obliczamy nowe wartoœci dla menu na podstawie zaktualizowanego dish
+                     
                             const updatedMenuData = {
                                 ...menu,
                                 dishes: menu.dishes.map(d =>
@@ -60,7 +60,7 @@ export default function MenuDetails() {
 
                             };
                             console.log("updatedmenudata", updatedMenuData);
-                            // Aktualizujemy menu w API
+           
                             try {
                                 const token = localStorage.getItem("jwtToken");
                                 const menuResponse = await fetch(`/api/menu/${id}`, {

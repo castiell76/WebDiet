@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 function DishIngredientsForm({ ingredients, dish }) {
     const [selectedIngredients, setSelectedIngredients] = useState([]);
 
-    // Funkcja obs³uguj¹ca wybór sk³adnika
+
     const handleSelect = (ingredientId) => {
         if (selectedIngredients.includes(ingredientId)) {
             setSelectedIngredients(selectedIngredients.filter(id => id !== ingredientId));
@@ -12,7 +12,7 @@ function DishIngredientsForm({ ingredients, dish }) {
         }
     };
 
-    // Funkcja do wys³ania wybranych sk³adników do backendu
+
     const handleSubmit = (e) => {
         e.preventDefault();
         fetch(`/api/dishes/${dish.id}/ingredients`, {

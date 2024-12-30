@@ -16,7 +16,7 @@ export default function IngredientDetails() {
             .catch((error) => console.error('Error:', error));
     }, [id]);
 
-    // Warunek sprawdzaj¹cy, czy dane zosta³y za³adowane
+
     if (!ingredient) {
         return <p>Loading...</p>;
     }

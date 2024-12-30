@@ -35,20 +35,20 @@ namespace WebDiet.Server.Services
                 throw new NotFoundException("User custom dish not found");
             }
 
-            // Aktualizacja podstawowych właściwości
+
             userCustomDish.Name = updatedDish.Name ?? userCustomDish.Name;
             userCustomDish.BaseDishId = updatedDish.BaseDishId ?? userCustomDish.BaseDishId;
 
-            // Reset wartości odżywczych
+   
             userCustomDish.Protein = 0;
             userCustomDish.Kcal = 0;
             userCustomDish.Fat = 0;
             userCustomDish.Carbo = 0;
 
-            // Usunięcie istniejących składników
+
             _context.UserDishIngredients.RemoveRange(userCustomDish.CustomIngredients);
 
-            // Dodanie nowych składników (jeśli są podane)
+
             if (updatedDish.CustomIngredients != null && updatedDish.CustomIngredients.Any())
             {
                 foreach (var ingredient in updatedDish.CustomIngredients)
@@ -68,18 +68,18 @@ namespace WebDiet.Server.Services
                         Quantity = ingredient.Quantity
                     };
 
-                    // Aktualizacja wartości odżywczych
+      
                     userCustomDish.Kcal += (ingredient.Quantity * ingredientEntity.KCal / 100);
                     userCustomDish.Protein += (ingredient.Quantity * ingredientEntity.Protein / 100);
                     userCustomDish.Carbo += (ingredient.Quantity * ingredientEntity.Carbo / 100);
                     userCustomDish.Fat += (ingredient.Quantity * ingredientEntity.Fat / 100);
 
-                    // Dodanie nowego składnika do kontekstu
+      
                     _context.UserDishIngredients.Add(userDishIngredient);
                 }
             }
 
-            // Zapis zmian
+
             _context.SaveChanges();
         }
         public DishDto GetById(int id)

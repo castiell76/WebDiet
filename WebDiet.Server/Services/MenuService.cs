@@ -55,7 +55,7 @@ namespace WebDiet.Server.Services
             menu.MenuAllergens = new List<MenuAllergen>();
 
 
-            var processedAllergens = new HashSet<int>(); // Zbiór do śledzenia już dodanych alergenów
+            var processedAllergens = new HashSet<int>(); 
 
             foreach (var dishDto in updatedMenu.Dishes)
             {
@@ -72,13 +72,13 @@ namespace WebDiet.Server.Services
 
                 if (dish != null)
                 {
-                    // Aktualizacja wartości menu
+                
                     menu.Kcal += dish.Kcal;
                     menu.Protein += dish.Protein;
                     menu.Carbo += dish.Carbo;
                     menu.Fat += dish.Fat;
 
-                    // Dodanie DishMenu
+                 
                     var dishMenu = new DishMenu
                     {
                         MenuId = menu.Id,
@@ -89,7 +89,7 @@ namespace WebDiet.Server.Services
                     };
                     _context.DishMenus.Add(dishMenu);
 
-                    // Przetwarzanie alergenów
+            
 
                     var ingredientIds = dish.Ingredients.Select(di => di.Id).ToList();
                     var ingredients = _context.Ingredients
@@ -167,7 +167,7 @@ namespace WebDiet.Server.Services
             _context.Menus.Add(menu);
             _context.SaveChanges();
 
-            var processedAllergens = new HashSet<int>(); // Zbiór do śledzenia już dodanych alergenów
+            var processedAllergens = new HashSet<int>(); 
 
             foreach (var dishDto in dto.Dishes)
             {
@@ -196,14 +196,14 @@ namespace WebDiet.Server.Services
 
                     _context.DishMenus.Add(dishMenu);
 
-                    // Pobieramy składniki
+                
                     var ingredientIds = dish.DishIngredients.Select(di => di.IngredientId).ToList();
                     var ingredients = _context.Ingredients
                         .Include(i => i.IngredientAllergens)
                         .Where(i => ingredientIds.Contains(i.Id))
                         .ToList();
 
-                    // Zbieramy alergeny ze składników
+              
                     foreach (var ingredient in ingredients)
                     {
                         foreach (var allergen in ingredient.IngredientAllergens)

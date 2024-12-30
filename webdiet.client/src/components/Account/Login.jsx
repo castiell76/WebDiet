@@ -63,7 +63,6 @@ const Login = () => {
 
                 const decodedUser = jwtDecode(token);
 
-                // Calling the login function to store the user and token in context
                 login(decodedUser, token);
 
                 const storage = formData.rememberMe ? localStorage : sessionStorage;
