@@ -59,7 +59,6 @@ export default function AddMenu({ showToast }) {
         weight: "",
         height: "",
         activity: "",
-        jobActivity: "",
         goal: "",
         goalPace: "0"
     })
@@ -72,10 +71,10 @@ export default function AddMenu({ showToast }) {
 
     const activityOptions = [
         { name: 'None physical activity' },
-        { name: '1-2 trainings per week' },
-        { name: '3-4 trainings per week' },
-        { name: '5-7 trainings per week' },
-        { name: 'more than 1 training per day' },
+        { name: 'Light activity (activity  approx. 140 minutes per week)/Office worker who is solely involved in duties '},
+        { name: 'Moderate activity (activity  approx. 280 minutes per week)/Office worker who exercises 2-3 times per week for at least an hour' },
+        { name: 'High activity (activity  approx. 420 minutes per week)/Office worker who exercises 3-4 times per week for at least an hour' },
+        { name: 'Very high physical activity (activity  approx. 560 minutes per week)/Professional athlete who exercises at least 6 hours per week or a hard worker' },
     ];
 
     const goals = [
@@ -90,12 +89,6 @@ export default function AddMenu({ showToast }) {
         { name: 'Other' },
     ];
 
-    const jobActivityOptions = [
-        { name: 'sedentary work' },
-        { name: 'moderate work activity' },
-        { name: 'heavy work activity' },
-
-    ];
 
     const mealImages = {
         Breakfast: "/assets/breakfast.jpg",
@@ -384,31 +377,7 @@ export default function AddMenu({ showToast }) {
                                     ))}
                                 </div>
                             </Form.Group>
-                            <Form.Group className="mb-3" controlId="userData.jobActivity">
-                                <Form.Label>Choose your job activity</Form.Label>
-                                <div className="d-flex flex-wrap gap-2">
-                                    {jobActivityOptions.map((option, idx) => (
-                                        <ToggleButton
-                                            key={idx}
-                                            id={`jobActivity-${idx}`}
-                                            type="radio"
-                                            variant="outline-primary"
-                                            name="jobActivity"
-                                            value={option.name}
-                                            checked={userData.jobActivity === option.name}
-                                            onClick={(e) => {
-                                                e.preventDefault();
-                                                setUserData(prev => ({
-                                                    ...prev,
-                                                    jobActivity: option.name
-                                                }));
-                                            }}
-                                        >
-                                            {option.name}
-                                        </ToggleButton>
-                                    ))}
-                                </div>
-                            </Form.Group>
+                          
                             <Form.Group className="mb-3" controlId="userData.jobActivity">
                                 <Form.Label>Choose your goal</Form.Label>
                                 <div className="d-flex flex-wrap gap-2">
