@@ -52,7 +52,11 @@ const CustomMenu = React.forwardRef(
 CustomMenu.displayName = 'CustomMenu';
 
 export default function AddMenu({ showToast }) {
+    const [showAllDishesModal, setShowAllDishesModal] = useState(false);
     const [showModal, setShowModal] = useState(false);
+    const [isKcalCalculated, setisKcalCalculated] = useState(false);
+    const [calculatedKcal, setCalculatedKcal] = useState('');
+    const [ingredients, setIngredients] = useState([]);
     const [userData, setUserData] = useState({
         gender: "",
         age: "",
@@ -112,7 +116,7 @@ export default function AddMenu({ showToast }) {
     const [mealCount, setMealCount] = useState(0);
 
     const handleClose = () => setShowModal(false);
-
+    const handleCloseAllDishesModal = () => setShowAllDishesModal(false);
 
     const handleSelectChange = (event) => {
         const selectedValue = parseInt(event.target.value, 10);
@@ -137,7 +141,6 @@ export default function AddMenu({ showToast }) {
         e.preventDefault();
         try {
             const token = localStorage.getItem("jwtToken");
-            console.log("userData: ", userData);
 
             const response = await fetch("/api/calculator/kcal", {
                 method: "POST",
@@ -147,6 +150,12 @@ export default function AddMenu({ showToast }) {
                 },
                 body: JSON.stringify(userData),
             });
+            
+            const calculatedKcal = await response.json();
+            setisKcalCalculated(true);
+            setCalculatedKcal(calculatedKcal)
+            setFormData({ ...formData, kcal: calculatedKcal });
+
         }
         catch (error) {
             console.error("Error occurred:", error.response, error);
@@ -208,7 +217,23 @@ export default function AddMenu({ showToast }) {
                 ...prev,
                 goalPace: value
             }));
-        };
+    };
+
+    const handleIngredientsChoose = async () => {
+        try {
+            const response = await fetch('/api/ingredient');
+            if (!response.ok) {
+                throw new Error('Failed to fetch ingredients');
+            }
+            const data = await response.json();
+            setIngredients(data);
+        } catch (error) {
+            setError('Failed to load available ingredients');
+        }
+        finally {
+            setShowAllDishesModal(true);
+        }
+    };
 
         const handleMealSelect = (mealType, selectedMeal) => {
             if (!selectedMeal || !selectedMeal.id) {
@@ -254,7 +279,9 @@ export default function AddMenu({ showToast }) {
                         />
                     </Form.Group>
                     <Form.Group className="mb-3" controlId="addMenu.kcal">
-                        <Form.Label>Kcal</Form.Label>
+                        <Form.Label>{isKcalCalculated
+                            ? `Kcal [suggested calculated kcal is ${calculatedKcal}]`
+                            : "Kcal"}</Form.Label>
                         <Form.Control
                             type="number"
                             placeholder="Kcal total"
@@ -274,6 +301,9 @@ export default function AddMenu({ showToast }) {
                         <option value="3">Five</option>
                     </Form.Select>
                     <div className="meal-cards d-flex justify-content-center align-items-center container py-4">
+                        <Button onClick={() => handleIngredientsChoose()}>
+                            Suggest all dishes
+                        </Button>
                         {mealTypes.map((mealType) => (
                             <MealCard
                                 key={mealType}
@@ -292,6 +322,27 @@ export default function AddMenu({ showToast }) {
                         Add Menu
                     </Button>
                 </Form>
+
+                <Modal show={showAllDishesModal} onHide={handleCloseAllDishesModal}>
+                    <Modal.Header closeButton>
+                        <Modal.Title>Suggest all dishes</Modal.Title>
+                    </Modal.Header>
+                    <Modal.Body>
+                        Search and choose ingredients you don't want to have in your menu
+                        <div style={{ maxHeight: '300px', overflowY: 'auto' }}>
+                            {ingredients
+                                .map(ingredient => (
+                                    <Button
+                                        key={ingredient.id}
+                                        variant="outline-primary"
+                                        className="m-1"
+                                    >
+                                        {ingredient.name}
+                                    </Button>
+                                ))}
+                        </div>
+                    </Modal.Body>
+                </Modal>
 
                 <Modal show={showModal} onHide={handleClose}>
                     <Modal.Header closeButton>
