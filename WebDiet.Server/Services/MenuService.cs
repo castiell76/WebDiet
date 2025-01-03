@@ -16,7 +16,7 @@ namespace WebDiet.Server.Services
         void Delete(int id);
 
         MenuDto Update(int id, MenuDto menu, int userId);
-        MenuDto AutoGenerateMenu(AutoMenuGeneratorDto dto, int userId);
+        MenuSuggestionResponseDto MenuSuggestion(MealSuggestionUserCondition dto, int userId);
     }
     public class MenuService : IMenuService
     {
@@ -30,7 +30,7 @@ namespace WebDiet.Server.Services
             _logger = logger;
         }
 
-        public MenuDto AutoGenerateMenu(AutoMenuGeneratorDto dto, int userId)
+        public MenuSuggestionResponseDto MenuSuggestion(MealSuggestionUserCondition dto, int userId)
         {
             var menu = new Menu
             {

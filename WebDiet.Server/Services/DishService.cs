@@ -120,11 +120,12 @@ namespace WebDiet.Server.Services
                     IngredientId = ingredient.Id,
                     Quantity = ingredient.Quantity,
                 }).ToList(),
-                DishAllergens = new List<DishAllergen>(), 
+                DishAllergens = new List<DishAllergen>(),
                 Kcal = 0,
                 Protein = 0,
                 Fat = 0,
-                Carbo = 0
+                Carbo = 0,
+                Types = dto.Types
             };
 
 

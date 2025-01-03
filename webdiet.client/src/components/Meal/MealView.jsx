@@ -19,6 +19,7 @@ const MealView = () => {
                 }
                 const data = await response.json();
                 setMealBasicInfo(data);
+                console.log(mealBasicInfo);
             } catch (err) {
                 setError(err.message);
             } finally {
@@ -69,9 +70,15 @@ const MealView = () => {
                                 <p><strong>Protein:</strong> {mealBasicInfo?.protein}g</p>
                                 <p><strong>Carbs:</strong> {mealBasicInfo?.carbo}g</p>
                                 <p><strong>Fat:</strong> {mealBasicInfo?.fat}g</p>
+                                <p><strong>Types: </strong></p>
+                                {mealBasicInfo?.types.map((type) => (
+                                    {type}
+                                )
+                                )}
                             </div>
                         </Card.Body>
                     </Card>
+                   
                 </Col>
                 <Col md={8}>
                     <Card>

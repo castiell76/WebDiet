@@ -73,8 +73,8 @@ namespace WebDiet.Server.Controllers
             return Created($"/api/menus/{menuDto.Id}", null);
         }
 
-        [HttpPost("autogeneratemenu")]
-        public ActionResult AutoGenerateMenu([FromBody] AutoMenuGeneratorDto dto)
+        [HttpPost("menusuggestion")]
+        public ActionResult MenuSuggestion([FromBody] MealSuggestionUserCondition dto)
         {
             if (!ModelState.IsValid)
             {
@@ -90,7 +90,7 @@ namespace WebDiet.Server.Controllers
 
             int userId = int.Parse(userIdClaim.Value);
 
-            var menuDto = _service.AutoGenerateMenu(dto, userId); 
+            var menuDto = _service.MenuSuggestion(dto, userId); 
 
             return Ok(menuDto);
         }

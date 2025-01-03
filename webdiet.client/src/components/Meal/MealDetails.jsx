@@ -186,7 +186,6 @@ const MealDetails = ({ mealId, isCustomDish, customDishId, onClose, onSave }) =>
         <div>
             <h3>{mealDetails.name}</h3>
              <div className="ingredients-list">
-                 {console.log("lokalne:",localIngredients) }
                  {localIngredients.map((ingredient) => (
                     
                     <div key={ingredient.id} className="ingredient-item mb-3">

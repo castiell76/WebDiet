@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import Dropdown from 'react-bootstrap/Dropdown';
+import DropdownButton from 'react-bootstrap/DropdownButton';
 import Form from 'react-bootstrap/Form';
 import Button from 'react-bootstrap/Button';
 import Container from 'react-bootstrap/Container';
@@ -53,10 +54,18 @@ CustomMenu.displayName = 'CustomMenu';
 export default function AddMeal({ showToast}) {
     const [formData, setFormData] = useState({
         name: "",
-        type:"",
+        types:[],
         description: "",
-        ingredients: [], // Tablica sk³adników
+        ingredients: [], 
     });
+    const [selectedTypes, setSelectedTypes] = useState([]);
+    const mealTypes = [
+        'Breakfast',
+        'Lunch', 
+        'Dinner',
+        'Supper',
+        'Snack', 
+    ]
 
     const [ingredients, setIngredients] = useState([]); 
 
@@ -126,7 +135,19 @@ export default function AddMeal({ showToast}) {
         };
         addIngredient(ingredient);
     };
+    const handleSelectTypes = (option) => {
+        setSelectedTypes((prevSelectedTypes) => {
+            const updatedTypes = [...prevSelectedTypes, option];
 
+         
+            setFormData((prevFormData) => ({
+                ...prevFormData,
+                types: updatedTypes,
+            }));
+
+            return updatedTypes;
+        });
+    };
 
     // Obs³uga przesy³ania danych
     const handleSubmit = async (e) => {
@@ -149,6 +170,7 @@ export default function AddMeal({ showToast}) {
                 setFormData({
                     name: "",
                     description: "",
+                    type:"",
                     ingredients: [],
                 });
             } else {
@@ -189,6 +211,22 @@ export default function AddMeal({ showToast}) {
                 </Form.Group>
                 <Form.Group className="mb-3" controlId="addIngredient.description">
                     <Form.Label>Type</Form.Label>
+                    <DropdownButton title="Types" variant="primary">
+                        {mealTypes.map((type, index) => (
+                            <Dropdown.Item
+                                key={index}
+                                as="div"
+                                onClick={(e) => setFormData({ ...formData, description: e.target.value })}
+                            >
+                                <Form.Check
+                                    type="checkbox"
+                                    label={type}
+                                    checked={selectedTypes.includes(type)}
+                                    onChange={() => handleSelectTypes(type)}
+                                />
+                            </Dropdown.Item>
+                        ))}
+                    </DropdownButton>
                     <Form.Control
                         type="text"
                         placeholder="Meal type"
@@ -197,20 +235,6 @@ export default function AddMeal({ showToast}) {
                         onChange={(e) => setFormData({ ...formData, type: e.target.value })}
                     />
                 </Form.Group>
-
-                {/*<div>*/}
-                {/*    <label htmlFor="ingredient-select">Ingredients</label>*/}
-                {/*    <Select*/}
-                {/*        id="ingredient-select"*/}
-                {/*        options={options}*/}
-                {/*        onInputChange={handleInputChange}*/}
-                {/*        onChange={handleChange}*/}
-                {/*        isLoading={isLoading}*/}
-                {/*        placeholder="Search ingredients..."*/}
-                {/*        noOptionsMessage={() => "No ingredients found"}*/}
-                {/*        isClearable*/}
-                {/*    />*/}
-                {/*</div>*/}
                 <Form.Group className="mb-3" controlId="mealIngredients">
                     <Form.Label>Ingredients</Form.Label>
                     <Dropdown>

@@ -196,7 +196,7 @@ export default function AddMenu({ showToast }) {
             showToast("Error connecting with server.");
         };
     }
-        const handleSubmit = async (e) => {
+    const handleSubmit = async (e) => {
             e.preventDefault();
 
             try {
@@ -245,7 +245,7 @@ export default function AddMenu({ showToast }) {
             }
         };
 
-        const handleRangeChange = (e) => {
+    const handleRangeChange = (e) => {
             const value = parseFloat(e.target.value);
             setUserData(prev => ({
                 ...prev,
@@ -259,7 +259,7 @@ export default function AddMenu({ showToast }) {
         try {
             const token = localStorage.getItem("jwtToken");
 
-            const response = await fetch("/api/menu/suggest", {
+            const response = await fetch("/api/menu/menusuggestion", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -275,7 +275,7 @@ export default function AddMenu({ showToast }) {
     }
 
 
-        const handleMealSelect = (mealType, selectedMeal) => {
+    const handleMealSelect = (mealType, selectedMeal) => {
             if (!selectedMeal || !selectedMeal.id) {
                 console.error('Invalid meal selected:', selectedMeal);
                 return;
@@ -294,7 +294,7 @@ export default function AddMenu({ showToast }) {
                 ],
             }));
         };
-        const mealTypes = getMealTypes(mealCount);
+    const mealTypes = getMealTypes(mealCount);
 
         return (
             <Container>
