@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using Humanizer;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using WebDiet.Server.Entities;
 using WebDiet.Server.Exceptions;
@@ -15,6 +16,7 @@ namespace WebDiet.Server.Services
         void Delete(int id);
 
         MenuDto Update(int id, MenuDto menu, int userId);
+        MenuDto AutoGenerateMenu(AutoMenuGeneratorDto dto, int userId);
     }
     public class MenuService : IMenuService
     {
@@ -26,6 +28,24 @@ namespace WebDiet.Server.Services
             _context = context;
             _mapper = mapper;
             _logger = logger;
+        }
+
+        public MenuDto AutoGenerateMenu(AutoMenuGeneratorDto dto, int userId)
+        {
+            var menu = new Menu
+            {
+                UserId = userId,
+                Kcal = 0,
+                Carbo = 0,
+                Protein = 0,
+                Fat = 0,
+            };
+            var BreakfastDishes = _context.Dishes.Where(p=>p.Types.Contains("Breakfast")).ToList();
+            var LunchDishes = _context.Dishes.Where(p => p.Types.Contains("Lunch")).ToList();
+            var DinnerDishes = _context.Dishes.Where(p => p.Types.Contains("Dinner")).ToList();
+            var SupperDishes = _context.Dishes.Where(p => p.Types.Contains("Supper")).ToList();
+
+            return null;
         }
         public MenuDto Update(int id, MenuDto updatedMenu, int userId)
         {

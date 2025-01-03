@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import MealCard from "../Meal/MealCard"
@@ -73,6 +73,13 @@ export default function AddMenu({ showToast }) {
         dishes: [],
     });
 
+    const [autoMenuData, setAutoMenuData] = useState({
+        kcal: "",
+        excludedAllergensIds: [],
+        excludedIngredientsIds: [],
+        mealsQuantity: "",
+    });
+
     const activityOptions = [
         { name: 'None physical activity' },
         { name: 'Light activity (activity  approx. 140 minutes per week)/Office worker who is solely involved in duties '},
@@ -120,15 +127,35 @@ export default function AddMenu({ showToast }) {
 
     const handleSelectChange = (event) => {
         const selectedValue = parseInt(event.target.value, 10);
+        let mealsQuantity = 3;
+        if (selectedValue === 1) {
+            mealsQuantity = 3;
+        }
+        else if (selectedValue === 2) {
+            mealsQuantity = 4;
+        }
+        else if (selectedValue === 3) {
+            mealsQuantity = 5;
+        }
         setMealCount(selectedValue);
+        setAutoMenuData((prevAutoMenuData) => ({
+            ...prevAutoMenuData,
+            mealsQuantity: mealsQuantity,
+        }));
     };
-    const handleExcludedIngredients = (selectedIds) => {
-        console.log('Wybrane ID ing:', selectedIds);
-    };
+    const handleExcludedIngredients = useCallback((selectedIds) => {
+        setAutoMenuData((prevAutoMenuData) => ({
+            ...prevAutoMenuData,
+            excludedIngredientsIds: selectedIds,
+        }));
+    }, []);
 
-    const handleExcludedAllergens = (selectedIds) => {
-        console.log('Wybrane ID all:', selectedIds);
-    };
+    const handleExcludedAllergens = useCallback((selectedIds) => {
+        setAutoMenuData((prevAutoMenuData) => ({
+            ...prevAutoMenuData,
+            excludedAllergensIds: selectedIds,
+        }));
+    }, []);
 
     const getMealTypes = (mealCount) => {
         switch (mealCount) {
@@ -228,7 +255,7 @@ export default function AddMenu({ showToast }) {
 
     const handleGetMenu = async (e) => {
         e.preventDefault();
-
+        console.log("automenu", autoMenuData);
         try {
             const token = localStorage.getItem("jwtToken");
 
@@ -238,7 +265,7 @@ export default function AddMenu({ showToast }) {
                     "Content-Type": "application/json",
                     "Authorization": `Bearer ${token}`
                 },
-                body: JSON.stringify(transformedData),
+                body: JSON.stringify(autoMenuData),
             });
         }
         catch (error) {
@@ -247,22 +274,6 @@ export default function AddMenu({ showToast }) {
         };
     }
 
-
-    //const handleIngredientsChoose = async () => {
-    //    try {
-    //        const response = await fetch('/api/ingredient');
-    //        if (!response.ok) {
-    //            throw new Error('Failed to fetch ingredients');
-    //        }
-    //        const data = await response.json();
-    //        setIngredients(data);
-    //    } catch (error) {
-    //        setError('Failed to load available ingredients');
-    //    }
-    //    finally {
-    //        setShowAllDishesModal(true);
-    //    }
-    //};
 
         const handleMealSelect = (mealType, selectedMeal) => {
             if (!selectedMeal || !selectedMeal.id) {
@@ -316,7 +327,13 @@ export default function AddMenu({ showToast }) {
                             placeholder="Kcal total"
                             value={formData.kcal}
                             name="kcal"
-                            onChange={(e) => setFormData({ ...formData, kcal: parseFloat(e.target.value) || 0 })}
+                            onChange={(e) => {
+                                setFormData({ ...formData, kcal: parseFloat(e.target.value) || 0 });
+                                setAutoMenuData((prevAutoMenuData) => ({
+                                    ...prevAutoMenuData,
+                                    kcal: parseFloat(e.target.value),
+                                }));
+                            }}
                         />
                     </Form.Group>
                     <Button onClick={() => setShowModal(true)}>
@@ -361,7 +378,10 @@ export default function AddMenu({ showToast }) {
                         <MultiSelectSearchAllergen onSelectionChange={handleExcludedAllergens }></MultiSelectSearchAllergen>
                         Select ingredients you want to exclude from diet
                         <MultiSelectSearchIngredient onSelectionChange={handleExcludedIngredients}></MultiSelectSearchIngredient>
-                        <Button>Generate menu</Button>
+                        <Button 
+                            onClick={handleGetMenu}>
+                            Generate menu
+                        </Button>
                     </Modal.Body>
                 </Modal>
 

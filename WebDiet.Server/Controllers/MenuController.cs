@@ -72,7 +72,29 @@ namespace WebDiet.Server.Controllers
 
             return Created($"/api/menus/{menuDto.Id}", null);
         }
-        // GET: api/<ValuesController>
+
+        [HttpPost("autogeneratemenu")]
+        public ActionResult AutoGenerateMenu([FromBody] AutoMenuGeneratorDto dto)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
+
+            if (userIdClaim == null)
+            {
+                return Unauthorized("User ID not found in token.");
+            }
+
+            int userId = int.Parse(userIdClaim.Value);
+
+            var menuDto = _service.AutoGenerateMenu(dto, userId); 
+
+            return Ok(menuDto);
+        }
+
         [HttpGet]
         public ActionResult<IEnumerable<MenuDto>> GetAll()
         {
@@ -81,7 +103,7 @@ namespace WebDiet.Server.Controllers
             return Ok(menusDtos);
         }
 
-        // GET api/<ValuesController>/5
+        
         [HttpGet("{id}")]
         public ActionResult<MenuDto> Get([FromRoute] int id)
         {

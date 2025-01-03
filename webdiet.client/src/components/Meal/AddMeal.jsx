@@ -53,6 +53,7 @@ CustomMenu.displayName = 'CustomMenu';
 export default function AddMeal({ showToast}) {
     const [formData, setFormData] = useState({
         name: "",
+        type:"",
         description: "",
         ingredients: [], // Tablica sk³adników
     });
@@ -184,6 +185,16 @@ export default function AddMeal({ showToast}) {
                         value={formData.description}
                         name="description"
                         onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                    />
+                </Form.Group>
+                <Form.Group className="mb-3" controlId="addIngredient.description">
+                    <Form.Label>Type</Form.Label>
+                    <Form.Control
+                        type="text"
+                        placeholder="Meal type"
+                        value={formData.type}
+                        name="type"
+                        onChange={(e) => setFormData({ ...formData, type: e.target.value })}
                     />
                 </Form.Group>
 

@@ -13,5 +13,6 @@
         public ICollection<DishAllergen>? DishAllergens { get; set; }
 
         public ICollection<DishMenu>? DishMenus { get; set; }
+        public string[]? Types {  get; set; }
     }
 }
