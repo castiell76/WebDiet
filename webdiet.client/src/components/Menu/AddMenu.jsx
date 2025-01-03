@@ -3,7 +3,8 @@ import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import MealCard from "../Meal/MealCard"
 import { Button, Modal, Form, Dropdown, ButtonGroup, ToggleButton, Container } from 'react-bootstrap';
-
+import MultiSelectSearchIngredient from '../Commons/MultiSelectSearchIngredient';
+import MultiSelectSearchAllergen from '../Commons/MultiSelectSearchAllergen';
 
 const CustomToggle = React.forwardRef(({ children, onClick }, ref) => (
     <Button
@@ -56,7 +57,6 @@ export default function AddMenu({ showToast }) {
     const [showModal, setShowModal] = useState(false);
     const [isKcalCalculated, setisKcalCalculated] = useState(false);
     const [calculatedKcal, setCalculatedKcal] = useState('');
-    const [ingredients, setIngredients] = useState([]);
     const [userData, setUserData] = useState({
         gender: "",
         age: "",
@@ -121,6 +121,13 @@ export default function AddMenu({ showToast }) {
     const handleSelectChange = (event) => {
         const selectedValue = parseInt(event.target.value, 10);
         setMealCount(selectedValue);
+    };
+    const handleExcludedIngredients = (selectedIds) => {
+        console.log('Wybrane ID ing:', selectedIds);
+    };
+
+    const handleExcludedAllergens = (selectedIds) => {
+        console.log('Wybrane ID all:', selectedIds);
     };
 
     const getMealTypes = (mealCount) => {
@@ -219,21 +226,43 @@ export default function AddMenu({ showToast }) {
             }));
     };
 
-    const handleIngredientsChoose = async () => {
+    const handleGetMenu = async (e) => {
+        e.preventDefault();
+
         try {
-            const response = await fetch('/api/ingredient');
-            if (!response.ok) {
-                throw new Error('Failed to fetch ingredients');
-            }
-            const data = await response.json();
-            setIngredients(data);
-        } catch (error) {
-            setError('Failed to load available ingredients');
+            const token = localStorage.getItem("jwtToken");
+
+            const response = await fetch("/api/menu/suggest", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${token}`
+                },
+                body: JSON.stringify(transformedData),
+            });
         }
-        finally {
-            setShowAllDishesModal(true);
-        }
-    };
+        catch (error) {
+            console.error("Error occurred:", error.response, error);
+            showToast("Error connecting with server.");
+        };
+    }
+
+
+    //const handleIngredientsChoose = async () => {
+    //    try {
+    //        const response = await fetch('/api/ingredient');
+    //        if (!response.ok) {
+    //            throw new Error('Failed to fetch ingredients');
+    //        }
+    //        const data = await response.json();
+    //        setIngredients(data);
+    //    } catch (error) {
+    //        setError('Failed to load available ingredients');
+    //    }
+    //    finally {
+    //        setShowAllDishesModal(true);
+    //    }
+    //};
 
         const handleMealSelect = (mealType, selectedMeal) => {
             if (!selectedMeal || !selectedMeal.id) {
@@ -301,7 +330,7 @@ export default function AddMenu({ showToast }) {
                         <option value="3">Five</option>
                     </Form.Select>
                     <div className="meal-cards d-flex justify-content-center align-items-center container py-4">
-                        <Button onClick={() => handleIngredientsChoose()}>
+                        <Button onClick={() => setShowAllDishesModal(true) }>
                             Suggest all dishes
                         </Button>
                         {mealTypes.map((mealType) => (
@@ -328,19 +357,11 @@ export default function AddMenu({ showToast }) {
                         <Modal.Title>Suggest all dishes</Modal.Title>
                     </Modal.Header>
                     <Modal.Body>
-                        Search and choose ingredients you don't want to have in your menu
-                        <div style={{ maxHeight: '300px', overflowY: 'auto' }}>
-                            {ingredients
-                                .map(ingredient => (
-                                    <Button
-                                        key={ingredient.id}
-                                        variant="outline-primary"
-                                        className="m-1"
-                                    >
-                                        {ingredient.name}
-                                    </Button>
-                                ))}
-                        </div>
+                        Select type of allergens you want to exclude from diet
+                        <MultiSelectSearchAllergen onSelectionChange={handleExcludedAllergens }></MultiSelectSearchAllergen>
+                        Select ingredients you want to exclude from diet
+                        <MultiSelectSearchIngredient onSelectionChange={handleExcludedIngredients}></MultiSelectSearchIngredient>
+                        <Button>Generate menu</Button>
                     </Modal.Body>
                 </Modal>
 
