@@ -27,6 +27,21 @@ export default function IngredientList({}) {
     const handleSearch = (e) => {
         setSearchQuery(e.target.value);
     };
+    const handleAddMany = async (e) => {
+        e.preventDefault();
+
+        try {
+            const response = await fetch("/api/ingredient/add-from-xls", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+            });
+
+        } catch (error) {
+            console.error("Error occurred:", error.response, error);
+        }
+    };
 
     const filteredIngredients = ingredients.filter((ingredient) =>
         ingredient.name.toLowerCase().includes(searchQuery.toLowerCase())
@@ -45,6 +60,9 @@ export default function IngredientList({}) {
                     <Link to="/ingredients/add" style={{ color: 'white', textDecoration: 'none' }}>
                         <BsPlus />
                     </Link>
+                </Button>
+                <Button variant="primary" className="btn btn-primary ms-3" onClick={handleAddMany }>
+                    Dodaj wiele
                 </Button>
             </div>
            

@@ -20,6 +20,7 @@ namespace WebDiet.Server.Entities
         public double? Carbo { get; set; }
         [Required]
         public double? Fat { get; set; }
+        public string? Category { get; set; }
 
         public ICollection<DishIngredient>? DishIngredients { get; set; }
 

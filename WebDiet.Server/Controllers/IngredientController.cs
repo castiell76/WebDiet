@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using WebDiet.Server.Entities;
 using WebDiet.Server.Models;
 using WebDiet.Server.Services;
@@ -18,6 +19,20 @@ namespace WebDiet.Server.Controllers
         public IngredientController(IIngredientService service)
         {
             _service = service;
+        }
+
+
+        [HttpPost("add-from-xls")]
+        public async Task<IActionResult> UploadXls()
+        {
+
+            string filePath = "C:\\Users\\BIP\\Desktop\\Nowy Arkusz kalkulacyjny OpenDocument.xlsx";
+            string extension = Path.GetExtension(filePath);
+            using var fileStream = new FileStream(filePath, FileMode.Open, FileAccess.Read);
+
+            _service.AddFromXls(fileStream, extension);
+
+            return Ok("Ingredients has been added.");
         }
 
         [HttpPut("{id}")]
