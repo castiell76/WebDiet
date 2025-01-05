@@ -16,7 +16,7 @@ namespace WebDiet.Server.Services
         void Delete(int id);
 
         MenuDto Update(int id, MenuDto menu, int userId);
-        MenuSuggestionResponseDto MenuSuggestion(MealSuggestionUserCondition dto, int userId);
+        MenuSuggestionResponseDto MenuSuggestion(DishSuggestionUserCondition dto, int userId);
     }
     public class MenuService : IMenuService
     {
@@ -30,7 +30,7 @@ namespace WebDiet.Server.Services
             _logger = logger;
         }
 
-        public MenuSuggestionResponseDto MenuSuggestion(MealSuggestionUserCondition dto, int userId)
+        public MenuSuggestionResponseDto MenuSuggestion(DishSuggestionUserCondition dto, int userId)
         {
             var menu = new Menu
             {
@@ -40,10 +40,21 @@ namespace WebDiet.Server.Services
                 Protein = 0,
                 Fat = 0,
             };
-            var BreakfastDishes = _context.Dishes.Where(p=>p.Types.Contains("Breakfast")).ToList();
-            var LunchDishes = _context.Dishes.Where(p => p.Types.Contains("Lunch")).ToList();
-            var DinnerDishes = _context.Dishes.Where(p => p.Types.Contains("Dinner")).ToList();
-            var SupperDishes = _context.Dishes.Where(p => p.Types.Contains("Supper")).ToList();
+            var dishes = _context.Dishes
+                .Include(di=>di.DishIngredients)
+                .Include(da=>da.DishAllergens)
+                .Include(dm=>dm.DishMenus)
+                .ToList();
+
+            dishes.RemoveAll(dish =>
+                dish.DishAllergens.Any(da => dto.ExcludedAllergensIds.Contains(da.AllergenId)) ||
+                dish.DishIngredients.Any(di => dto.ExcludedIngredientsIds.Contains(di.IngredientId)));
+
+            var BreakfastDishes = dishes.Where(p => p.Types != null && p.Types.Contains("Breakfast")).ToList();
+            var LunchDishes = dishes.Where(p => p.Types != null && p.Types.Contains("Lunch")).ToList();
+            var DinnerDishes = dishes.Where(p => p.Types != null && p.Types.Contains("Dinner")).ToList();
+            var SupperDishes = dishes.Where(p => p.Types != null && p.Types.Contains("Supper")).ToList();
+            var SnackDishes = dishes.Where(p => p.Types != null && p.Types.Contains("Snack")).ToList();
 
             return null;
         }

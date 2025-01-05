@@ -137,9 +137,12 @@ export default function AddMeal({ showToast}) {
     };
     const handleSelectTypes = (option) => {
         setSelectedTypes((prevSelectedTypes) => {
-            const updatedTypes = [...prevSelectedTypes, option];
+            const isAlreadySelected = prevSelectedTypes.includes(option);
+            const updatedTypes = isAlreadySelected
+                ? prevSelectedTypes.filter((type) => type !== option) 
+                : [...prevSelectedTypes, option]; 
 
-         
+
             setFormData((prevFormData) => ({
                 ...prevFormData,
                 types: updatedTypes,
@@ -199,7 +202,7 @@ export default function AddMeal({ showToast}) {
                         onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                     />
                 </Form.Group>
-                <Form.Group className="mb-3" controlId="addIngredient.description">
+                <Form.Group className="mb-3" controlId="addMeal.description">
                     <Form.Label>Description</Form.Label>
                     <Form.Control
                         type="text"
@@ -209,20 +212,17 @@ export default function AddMeal({ showToast}) {
                         onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                     />
                 </Form.Group>
-                <Form.Group className="mb-3" controlId="addIngredient.description">
+                <Form.Group className="mb-3" controlId="addMeal.type">
                     <Form.Label>Type</Form.Label>
                     <DropdownButton title="Types" variant="primary">
                         {mealTypes.map((type, index) => (
-                            <Dropdown.Item
-                                key={index}
-                                as="div"
-                                onClick={(e) => setFormData({ ...formData, description: e.target.value })}
-                            >
+                            <Dropdown.Item key={index} as="div" onClick={(e) => e.stopPropagation()}>
                                 <Form.Check
                                     type="checkbox"
-                                    label={type}
+                                    id={`checkbox-${index}`} 
                                     checked={selectedTypes.includes(type)}
                                     onChange={() => handleSelectTypes(type)}
+                                    label={type} 
                                 />
                             </Dropdown.Item>
                         ))}

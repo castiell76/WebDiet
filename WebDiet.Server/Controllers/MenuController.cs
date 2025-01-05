@@ -74,7 +74,7 @@ namespace WebDiet.Server.Controllers
         }
 
         [HttpPost("menusuggestion")]
-        public ActionResult MenuSuggestion([FromBody] MealSuggestionUserCondition dto)
+        public ActionResult MenuSuggestion([FromBody] DishSuggestionUserCondition dto)
         {
             if (!ModelState.IsValid)
             {
