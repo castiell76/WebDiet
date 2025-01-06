@@ -13,26 +13,25 @@ namespace WebDiet.Server
 
         public void Seed()
         {
-
             if (_context.Database.CanConnect())
             {
-                if (!_context.Ingredients.Any())
-                {
-                    _context.Ingredients.AddRange(GetIngredients());
+                //if (!_context.Ingredients.Any())
+                //{
+                //    _context.Ingredients.AddRange(GetIngredients());
 
-                    _context.SaveChanges();
-                }
+                //    _context.SaveChanges();
+                //}
                 if (!_context.Roles.Any())
                 {
                     _context.Roles.AddRange(GetRoles());
 
                     _context.SaveChanges();
                 }
-                if (!_context.Dishes.Any())
-                {
-                    _context.Dishes.AddRange(GetDishes());
-                    _context.SaveChanges();
-                }
+                //if (!_context.Dishes.Any())
+                //{
+                //    _context.Dishes.AddRange(GetDishes());
+                //    _context.SaveChanges();
+                //}
                 if (!_context.Allergens.Any())
                 {
                     _context.Allergens.AddRange(GetAllergens());

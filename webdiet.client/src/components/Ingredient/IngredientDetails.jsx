@@ -39,6 +39,8 @@ export default function IngredientDetails() {
             ) : (
                 <p>No allergens</p>
             )}
+            <p><strong>Category:</strong> {ingredient.category}</p>
+            
         </div>
     );
 }

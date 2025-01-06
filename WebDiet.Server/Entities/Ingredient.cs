@@ -8,7 +8,7 @@ namespace WebDiet.Server.Entities
     {
         public int Id { get; set; }
         [Required]
-        [MaxLength(30)]
+        [MaxLength(100)]
         public string Name { get; set; }
         public string? Description { get; set; }
         public ICollection<IngredientAllergen>? IngredientAllergens { get; set; } = new List<IngredientAllergen>();

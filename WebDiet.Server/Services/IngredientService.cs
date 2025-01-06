@@ -84,11 +84,17 @@ namespace WebDiet.Server.Services
                     Carbo = double.TryParse(GetCellValue(row, headers, "carbo"), out var carbo) ? carbo : 0,
                     Fat = double.TryParse(GetCellValue(row, headers, "fat"), out var fat) ? fat : 0,
                     Category = GetCellValue(row, headers, "category"),
-                    IngredientAllergens = ProcessAllergens(GetCellValue(row, headers, "allergens"), existingAllergens)
+                    IngredientAllergens = ProcessAllergens(GetCellValue(row, headers, "allergen"), existingAllergens)
                 };
 
-                newIngredients.Add(currentIngredient);
+                if(!_context.Ingredients.Any(x=>x.Name == currentIngredient.Name))
+                {
+                    newIngredients.Add(currentIngredient);
+                }
             }
+
+            _context.Ingredients.AddRange(newIngredients);
+            _context.SaveChanges();
 
             return newIngredients;
         }

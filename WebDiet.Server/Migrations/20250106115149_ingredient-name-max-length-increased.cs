@@ -5,7 +5,7 @@
 namespace WebDiet.Server.Migrations
 {
     /// <inheritdoc />
-    public partial class _28113 : Migration
+    public partial class ingredientnamemaxlengthincreased : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)

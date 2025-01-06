@@ -74,6 +74,7 @@ export default function IngredientList({}) {
                         <th>Protein [g]</th>
                         <th>Carbo [g]</th>
                         <th>Fat [g]</th>
+                        <th>Category</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -82,10 +83,12 @@ export default function IngredientList({}) {
                             <td>
                                 <Link to={`/ingredient/${ingredient.id}`}>{ingredient.name}</Link>
                             </td>
+                            
                             <td>{ingredient.kcal}</td>
                             <td>{ingredient.protein}</td>
                             <td>{ingredient.carbo}</td>
                             <td>{ingredient.fat}</td>
+                            <td>{ingredient.category}</td>
                         </tr>
                     ))}
                 </tbody>

@@ -12,8 +12,8 @@ using WebDiet.Server.Entities;
 namespace WebDiet.Server.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20241219123825_19.12-2")]
-    partial class _19122
+    [Migration("20250106114042_init")]
+    partial class init
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -132,6 +132,9 @@ namespace WebDiet.Server.Migrations
                     b.Property<double?>("Protein")
                         .HasColumnType("float");
 
+                    b.Property<string>("Types")
+                        .HasColumnType("nvarchar(max)");
+
                     b.HasKey("Id");
 
                     b.ToTable("Dishes");
@@ -209,6 +212,9 @@ namespace WebDiet.Server.Migrations
                     b.Property<double?>("Carbo")
                         .IsRequired()
                         .HasColumnType("float");
+
+                    b.Property<string>("Category")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Description")
                         .HasColumnType("nvarchar(max)");
