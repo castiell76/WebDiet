@@ -71,10 +71,13 @@ const MealView = () => {
                                 <p><strong>Carbs:</strong> {mealBasicInfo?.carbo}g</p>
                                 <p><strong>Fat:</strong> {mealBasicInfo?.fat}g</p>
                                 <p><strong>Types: </strong></p>
-                                {mealBasicInfo?.types.map((type) => (
-                                    {type}
-                                )
-                                )}
+                                {mealBasicInfo?.types.map((type, index) => (
+                                    <li key={index}>{type}</li>
+                                ))}
+                                <p><strong>Allergens: </strong></p>
+                                {mealBasicInfo?.allergens.map((allergen, index) => (
+                                    <li key={index}>{allergen}</li>
+                                ))}
                             </div>
                         </Card.Body>
                     </Card>

@@ -41,6 +41,7 @@ const MealDetails = ({ mealId, isCustomDish, customDishId, onClose, onSave }) =>
 
             const data = await response.json();
             setMealDetails(data);
+            console.log(data);
             setLocalIngredients(data.ingredients);
         } catch (err) {
             setError(err.message);

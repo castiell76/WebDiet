@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using NuGet.Packaging;
 using Swashbuckle.AspNetCore.SwaggerGen;
+using System;
 using WebDiet.Server.Entities;
 using WebDiet.Server.Exceptions;
 using WebDiet.Server.Models;
@@ -35,27 +36,35 @@ namespace WebDiet.Server.Services
             var allIngredients = _context.Ingredients
                 .Include(d => d.IngredientAllergens)
                 .ToList();
+            string[] allTypes = { "Breakfast", "Dinner", "Supper", "Snack", "Lunch" };
 
             Random random = new Random();
 
             for (int i = 0; i < 50; i++)
             {
+        
+                int newArrayLength = random.Next(1, allTypes.Length + 1);
+
+
+                string[] types = allTypes
+                    .OrderBy(x => random.Next()) 
+                    .Take(newArrayLength) 
+                    .ToArray();
 
                 int ingredientsQuantity = random.Next(2, 9);
                 var ingredients = new Dictionary<Ingredient, double>();
 
                 while (ingredients.Count < ingredientsQuantity)
                 {
-                    int indexValue = random.Next(0, allIngredients.Count); // Poprawiono zakres
+                    int indexValue = random.Next(0, allIngredients.Count);
                     var ingredient = allIngredients[indexValue];
 
                     if (!ingredients.ContainsKey(ingredient))
                     {
-                        double ingredientMass = random.Next(50, 750); // Losowa masa
+                        double ingredientMass = random.Next(50, 450);
                         ingredients.Add(ingredient, ingredientMass);
                     }
                 }
-
 
                 var dish = new Dish
                 {
@@ -67,8 +76,8 @@ namespace WebDiet.Server.Services
                     Kcal = 0,
                     DishIngredients = new List<DishIngredient>(),
                     DishAllergens = new List<DishAllergen>(),
+                    Types = types.ToArray(), 
                 };
-
 
                 foreach (var ingredient in ingredients)
                 {
@@ -78,7 +87,7 @@ namespace WebDiet.Server.Services
                         Quantity = ingredient.Value,
                     };
 
-                    if(ingredient.Key.IngredientAllergens != null)
+                    if (ingredient.Key.IngredientAllergens != null)
                     {
                         foreach (var ingredientAllergen in ingredient.Key.IngredientAllergens)
                         {
@@ -90,26 +99,21 @@ namespace WebDiet.Server.Services
                                 };
                                 dish.DishAllergens.Add(dishAllergen);
                             }
-                              
                         }
-                            
                     }
 
-                    dish.Kcal +=ingredient.Key.KCal * ingredient.Value/100;
-                    dish.Protein += ingredient.Key.Protein * ingredient.Value/100;
+                    dish.Kcal += ingredient.Key.KCal * ingredient.Value / 100;
+                    dish.Protein += ingredient.Key.Protein * ingredient.Value / 100;
                     dish.Fat += ingredient.Key.Fat * ingredient.Value / 100;
                     dish.Carbo += ingredient.Key.Carbo * ingredient.Value / 100;
 
                     dish.DishIngredients.Add(dishIngredient);
                 }
 
-
                 _context.Dishes.Add(dish);
             }
 
-
             _context.SaveChanges();
-        
         }
         public void Update(int id, DishDto updatedDish)
         {
