@@ -1,5 +1,7 @@
 ﻿using AutoMapper;
 using Microsoft.EntityFrameworkCore;
+using NuGet.Packaging;
+using Swashbuckle.AspNetCore.SwaggerGen;
 using WebDiet.Server.Entities;
 using WebDiet.Server.Exceptions;
 using WebDiet.Server.Models;
@@ -13,6 +15,7 @@ namespace WebDiet.Server.Services
         int Create(DishDto dish);
         void Delete(int id);
         void Update(int id, DishDto dish);
+        void CreateRandomDishes();
     }
 
     public class DishService : IDishService
@@ -25,6 +28,88 @@ namespace WebDiet.Server.Services
             _context = context;
             _mapper = mapper;
             _logger = logger;
+        }
+
+        public void CreateRandomDishes()
+        {
+            var allIngredients = _context.Ingredients
+                .Include(d => d.IngredientAllergens)
+                .ToList();
+
+            Random random = new Random();
+
+            for (int i = 0; i < 50; i++)
+            {
+
+                int ingredientsQuantity = random.Next(2, 9);
+                var ingredients = new Dictionary<Ingredient, double>();
+
+                while (ingredients.Count < ingredientsQuantity)
+                {
+                    int indexValue = random.Next(0, allIngredients.Count); // Poprawiono zakres
+                    var ingredient = allIngredients[indexValue];
+
+                    if (!ingredients.ContainsKey(ingredient))
+                    {
+                        double ingredientMass = random.Next(50, 750); // Losowa masa
+                        ingredients.Add(ingredient, ingredientMass);
+                    }
+                }
+
+
+                var dish = new Dish
+                {
+                    Name = $"Danie {i + 1}",
+                    Description = $"Description {i + 1}",
+                    Fat = 0,
+                    Carbo = 0,
+                    Protein = 0,
+                    Kcal = 0,
+                    DishIngredients = new List<DishIngredient>(),
+                    DishAllergens = new List<DishAllergen>(),
+                };
+
+
+                foreach (var ingredient in ingredients)
+                {
+                    var dishIngredient = new DishIngredient
+                    {
+                        IngredientId = ingredient.Key.Id,
+                        Quantity = ingredient.Value,
+                    };
+
+                    if(ingredient.Key.IngredientAllergens != null)
+                    {
+                        foreach (var ingredientAllergen in ingredient.Key.IngredientAllergens)
+                        {
+                            if (!dish.DishAllergens.Any(a => a.AllergenId == ingredientAllergen.AllergenId))
+                            {
+                                var dishAllergen = new DishAllergen
+                                {
+                                    AllergenId = ingredientAllergen.AllergenId,
+                                };
+                                dish.DishAllergens.Add(dishAllergen);
+                            }
+                              
+                        }
+                            
+                    }
+
+                    dish.Kcal +=ingredient.Key.KCal * ingredient.Value/100;
+                    dish.Protein += ingredient.Key.Protein * ingredient.Value/100;
+                    dish.Fat += ingredient.Key.Fat * ingredient.Value / 100;
+                    dish.Carbo += ingredient.Key.Carbo * ingredient.Value / 100;
+
+                    dish.DishIngredients.Add(dishIngredient);
+                }
+
+
+                _context.Dishes.Add(dish);
+            }
+
+
+            _context.SaveChanges();
+        
         }
         public void Update(int id, DishDto updatedDish)
         {

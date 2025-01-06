@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import Table from 'react-bootstrap/Table';
+import Button from 'react-bootstrap/Button';
 import { useNavigate } from 'react-router-dom';
 export default function MealsList() {
 
@@ -24,37 +25,59 @@ export default function MealsList() {
             .catch(error => console.error("Error fetching meal:", error));
     }, []);
 
+    const handleCreateRandomDishes = async (e) => {
+        e.preventDefault();
+        try {
+
+            const response = await fetch("/api/dish/create-random-dishes", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+            });
+
+
+        }
+        catch (error) {
+            console.error("Error occurred:", error.response, error);
+        };
+    }
+
     return (
-        <Table
-            striped
-            bordered
-            hover
-            className ="m-3"
-        >
-            <thead>
-                <tr>
-                    <th>Name</th>
-                    <th>Kcal</th>
-                    <th>Protein [g]</th>
-                    <th>Carbo [g]</th>
-                    <th>Fat [g]</th>
-                </tr>
-            </thead>
-            <tbody>
-                {meals.map((meal, index) => (
-                    <tr
-                        key={index}
-                        onClick={() => navigate(`/meal/${meal.id}`)}
-                        style={{ cursor: 'pointer' }}
-                    >
-                        <td>{meal.name}</td>
-                        <td>{meal.kcal}</td>
-                        <td>{meal.protein}</td>
-                        <td>{meal.carbo}</td>
-                        <td>{meal.fat}</td>
+        <div>
+            <Table
+                striped
+                bordered
+                hover
+                className="m-3"
+            >
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Kcal</th>
+                        <th>Protein [g]</th>
+                        <th>Carbo [g]</th>
+                        <th>Fat [g]</th>
                     </tr>
-                ))}
-            </tbody>
-        </Table>
+                </thead>
+                <tbody>
+                    {meals.map((meal, index) => (
+                        <tr
+                            key={index}
+                            onClick={() => navigate(`/meal/${meal.id}`)}
+                            style={{ cursor: 'pointer' }}
+                        >
+                            <td>{meal.name}</td>
+                            <td>{meal.kcal}</td>
+                            <td>{meal.protein}</td>
+                            <td>{meal.carbo}</td>
+                            <td>{meal.fat}</td>
+                        </tr>
+                    ))}
+                </tbody>
+            </Table>
+            <Button onClick={handleCreateRandomDishes }> Create random dishes</Button>
+        </div>
+       
     );
 }

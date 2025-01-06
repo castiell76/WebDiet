@@ -18,6 +18,16 @@ namespace WebDiet.Server.Controllers
             _service = service;
         }
 
+        [HttpPost("create-random-dishes")]
+        //[Authorize(Roles = "Admin,Moderator")]
+        public ActionResult CreateRandomDishes()
+        {
+
+            _service.CreateRandomDishes(); 
+
+            return Ok();
+        }
+
         [HttpPut("{id}")]
         //[Authorize(Roles = "Admin,Moderator")]
 
