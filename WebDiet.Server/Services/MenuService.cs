@@ -2,6 +2,7 @@
 using Humanizer;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System;
 using WebDiet.Server.Entities;
 using WebDiet.Server.Exceptions;
 using WebDiet.Server.Models;
@@ -16,7 +17,7 @@ namespace WebDiet.Server.Services
         void Delete(int id);
 
         MenuDto Update(int id, MenuDto menu, int userId);
-        MenuSuggestionResponseDto MenuSuggestion(DishSuggestionUserCondition dto, int userId);
+        MenuDto MenuSuggestion(DishSuggestionUserCondition dto, int userId);
     }
     public class MenuService : IMenuService
     {
@@ -30,11 +31,12 @@ namespace WebDiet.Server.Services
             _logger = logger;
         }
 
-        public MenuSuggestionResponseDto MenuSuggestion(DishSuggestionUserCondition dto, int userId)
+        public MenuDto MenuSuggestion(DishSuggestionUserCondition dto, int userId)
         {
-            var menu = new Menu
+            Random random = new Random();
+            var menuSuggestion = new MenuDto
             {
-                UserId = userId,
+                Dishes = new List<DishMenuDto>(),
                 Kcal = 0,
                 Carbo = 0,
                 Protein = 0,
@@ -50,13 +52,82 @@ namespace WebDiet.Server.Services
                 dish.DishAllergens.Any(da => dto.ExcludedAllergensIds.Contains(da.AllergenId)) ||
                 dish.DishIngredients.Any(di => dto.ExcludedIngredientsIds.Contains(di.IngredientId)));
 
-            var BreakfastDishes = dishes.Where(p => p.Types != null && p.Types.Contains("Breakfast")).ToList();
-            var LunchDishes = dishes.Where(p => p.Types != null && p.Types.Contains("Lunch")).ToList();
-            var DinnerDishes = dishes.Where(p => p.Types != null && p.Types.Contains("Dinner")).ToList();
-            var SupperDishes = dishes.Where(p => p.Types != null && p.Types.Contains("Supper")).ToList();
-            var SnackDishes = dishes.Where(p => p.Types != null && p.Types.Contains("Snack")).ToList();
+            var breakfastDishes = dishes
+                .Where(p => p.Types != null && p.Types.Contains("Breakfast"))
+                .ToList();
+            var lunchDishes = dishes
+                .Where(p => p.Types != null && p.Types.Contains("Lunch"))
+                .ToList();
+            var dinnerDishes = dishes
+                .Where(p => p.Types != null && p.Types.Contains("Dinner"))
+                .ToList();
+            var supperDishes = dishes
+                .Where(p => p.Types != null && p.Types.Contains("Supper"))
+                .ToList();
+            var snackDishes = dishes
+                .Where(p => p.Types != null && p.Types.Contains("Snack"))
+                .ToList();
 
-            return null;
+            var breakfastDishesDto = _mapper.Map<List<DishDto>>(breakfastDishes);
+            var lunchDishesDto = _mapper.Map<List<DishDto>>(lunchDishes);
+            var dinnerDishesDto = _mapper.Map<List<DishDto>>(dinnerDishes);
+            var supperDishesDto = _mapper.Map<List<DishDto>>(supperDishes);
+            var snackDishesDto = _mapper.Map<List<DishDto>>(snackDishes);
+
+            var breakfastSuggestionDto = AssignSuggestedDish("breakfast", breakfastDishesDto);
+            var lunchSuggestionDto = AssignSuggestedDish("lunch", lunchDishesDto);
+            var dinnerSuggestionDto = AssignSuggestedDish("dinner", dinnerDishesDto);
+            var supperSuggestionDto = AssignSuggestedDish("supper", supperDishesDto);
+            var snackSuggestionDto = AssignSuggestedDish("snack", snackDishesDto);
+            menuSuggestion.Dishes.Add(breakfastSuggestionDto);
+            menuSuggestion.Dishes.Add(lunchSuggestionDto);
+            menuSuggestion.Dishes.Add(dinnerSuggestionDto);
+            menuSuggestion.Dishes.Add(supperSuggestionDto);
+            menuSuggestion.Dishes.Add(snackSuggestionDto);
+
+            return menuSuggestion;
+        }
+        private int[] GetRandomIndexes(int arrayLength)
+        {
+            Random random = new Random();
+            int[] indexes = new int[5];
+            HashSet<int> uniqueIndexes = new HashSet<int>();
+
+            if (arrayLength < 5)
+            {
+                throw new InvalidOperationException("List too short.");
+            }
+
+            int i = 0;
+            while (uniqueIndexes.Count < 5)
+            {
+                int currentIndex = random.Next(0, arrayLength);
+                if (uniqueIndexes.Add(currentIndex))
+                {
+                    indexes[i] = currentIndex;
+                    i++;
+                }
+            }
+            return indexes;
+        }
+        private DishMenuDto AssignSuggestedDish(string type, List<DishDto> dishes)
+        {
+            var randomIndexes = GetRandomIndexes(dishes.Count);
+            DishDto suggestedDish = dishes[randomIndexes[0]];
+            List<DishDto> alternativeDishes = new List<DishDto>();
+            for(int i =1; i<randomIndexes.Length; i++)
+            {
+                alternativeDishes.Add(dishes[randomIndexes[i]]);
+            }
+            var dishMenu = new DishMenuDto()
+            {
+                Type = type,
+                Dish = suggestedDish,
+                DishId = suggestedDish.Id,
+                AlternativeDishes = alternativeDishes,
+            };
+
+            return dishMenu;
         }
         public MenuDto Update(int id, MenuDto updatedMenu, int userId)
         {

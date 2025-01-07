@@ -1,13 +1,19 @@
-﻿import React, { useState } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import { Button, Card, Modal, Form, Dropdown } from 'react-bootstrap';
 import MealDetails from './MealDetails';
 
-function MealCard({ mealType, description, imagePath, meals, onMealSelect }) {
+function MealCard({ mealType, description, imagePath, meals, onMealSelect, currentSelectedMeal }) {
     const [showModal, setShowModal] = useState(false);
     const [showModalDetail, setShowModalDetail] = useState(false);
     const [searchValue, setSearchValue] = useState('');
-    const [selectedMeal, setSelectedMeal] = useState(null);
+    const [selectedMeal, setSelectedMeal] = useState(currentSelectedMeal);
     const [userCustomDish, setUserCustomDish] = useState(null);
+
+    useEffect(() => {
+        if (currentSelectedMeal) {
+            setSelectedMeal(currentSelectedMeal);
+        }
+    }, [currentSelectedMeal]);
 
     const handleClose = () => setShowModal(false);
     const handleCloseDetail = () => setShowModalDetail(false);

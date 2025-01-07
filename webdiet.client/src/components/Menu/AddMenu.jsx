@@ -119,6 +119,9 @@ export default function AddMenu({ showToast }) {
             .catch((error) => console.error("Error:", error));
     }, []);
 
+    useEffect(() => {
+        console.log("formData updated:", formData);
+    }, [formData]);
 
     const [mealCount, setMealCount] = useState(0);
 
@@ -255,7 +258,6 @@ export default function AddMenu({ showToast }) {
 
     const handleGetMenu = async (e) => {
         e.preventDefault();
-        console.log("automenu", autoMenuData);
         try {
             const token = localStorage.getItem("jwtToken");
 
@@ -267,33 +269,69 @@ export default function AddMenu({ showToast }) {
                 },
                 body: JSON.stringify(autoMenuData),
             });
+
+            const menuDto = await response.json();
+
+            if (menuDto.dishes && menuDto.dishes.length > 0) {
+                // Upewnij siê, ¿e ka¿de danie ma wymagane pola
+                const transformedDishes = menuDto.dishes.map(dish => ({
+                    id: dish.dishId,
+                    name: dish.name || "Unknown",
+                    type: dish.type,
+                    ingredients: dish.ingredients || []
+                }));
+
+                // Aktualizuj ka¿de danie osobno przez handleMealSelect
+                transformedDishes.forEach(dish => {
+                    const mealType = dish.type;
+                    handleMealSelect(mealType, {
+                        id: dish.id,
+                        name: dish.name,
+                        ingredients: dish.ingredients
+                    });
+                });
+
+                // Aktualizuj równie¿ formData
+                setFormData(prev => ({
+                    ...prev,
+                    kcal: menuDto.kcal || prev.kcal,
+                    dishes: transformedDishes
+                }));
+
+                handleCloseAllDishesModal();
+                showToast({ message: "Menu suggestion applied successfully!", variant: 'success' });
+            }
+        } catch (error) {
+            console.error("Error occurred:", error);
+            showToast({ message: "Error getting menu suggestion.", variant: 'error' });
         }
-        catch (error) {
-            console.error("Error occurred:", error.response, error);
-            showToast("Error connecting with server.");
-        };
-    }
+    };
 
 
     const handleMealSelect = (mealType, selectedMeal) => {
-            if (!selectedMeal || !selectedMeal.id) {
-                console.error('Invalid meal selected:', selectedMeal);
-                return;
-            }
+        console.log("handleMealSelect called with:", mealType, selectedMeal); // debugging
+        if (!selectedMeal || !selectedMeal.id) {
+            console.error('Invalid meal selected:', selectedMeal);
+            return;
+        }
 
-            setFormData((prev) => ({
+        setFormData((prev) => {
+            const newDishes = [
+                ...prev.dishes.filter((dish) => dish.type !== mealType),
+                {
+                    type: mealType,
+                    id: selectedMeal.id,
+                    name: selectedMeal.name,
+                    ingredients: selectedMeal.ingredients || [],
+                },
+            ];
+            console.log("Updated dishes:", newDishes); // debugging
+            return {
                 ...prev,
-                dishes: [
-                    ...prev.dishes.filter((dish) => dish.type !== mealType),
-                    {
-                        type: mealType,
-                        id: selectedMeal.id,
-                        name: selectedMeal.name,
-                        ingredients: selectedMeal.ingredients || [],
-                    },
-                ],
-            }));
-        };
+                dishes: newDishes,
+            };
+        });
+    };
     const mealTypes = getMealTypes(mealCount);
 
         return (
@@ -350,18 +388,27 @@ export default function AddMenu({ showToast }) {
                         <Button onClick={() => setShowAllDishesModal(true) }>
                             Suggest all dishes
                         </Button>
-                        {mealTypes.map((mealType) => (
-                            <MealCard
-                                key={mealType}
-                                mealType={mealType}
-                                description={`Description for ${mealType.toLowerCase()}`}
-                                imagePath={mealImages[mealType]}
-                                meals={meals}
-                                onMealSelect={(selectedMeal) => {
-                                    handleMealSelect(mealType, selectedMeal);
-                                }}
-                            />
-                        ))}
+                        {mealTypes.map((mealType) => {
+                            const currentDish = formData.dishes.find(dish => dish.type.toLowerCase() === mealType.toLowerCase());
+
+                            return (
+                                <MealCard
+                                    key={mealType}
+                                    mealType={mealType}
+                                    description={`Description for ${mealType.toLowerCase()}`}
+                                    imagePath={mealImages[mealType]}
+                                    meals={meals}
+                                    currentSelectedMeal={currentDish ? {
+                                        id: currentDish.id,
+                                        name: currentDish.name,
+                                        ingredients: currentDish.ingredients
+                                    } : null}
+                                    onMealSelect={(selectedMeal) => {
+                                        handleMealSelect(mealType, selectedMeal);
+                                    }}
+                                />
+                            );
+                        })}
                     </div>
 
                     <Button type="submit" variant="primary" className="mt-3">

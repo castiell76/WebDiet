@@ -7,4 +7,5 @@ public class DishMenuDto
     public int? UserCustomDishId { get; set; }
     public UserCustomDishDto? UserCustomDish { get; set; }
     public string? Type { get; set; }
+    public ICollection<DishDto>? AlternativeDishes { get; set; } = new List<DishDto>();
 }

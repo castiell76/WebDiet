@@ -26,7 +26,7 @@ namespace WebDiet.Server.Controllers
         public async Task<IActionResult> AddFromXls()
         {
             
-            string filePath = "C:\\Users\\BIP\\Desktop\\Nowy Arkusz kalkulacyjny OpenDocument.xlsx";
+            string filePath = "C:\\Users\\ebabs\\Downloads\\Nowy Arkusz kalkulacyjny OpenDocument.xlsx";
             string extension = Path.GetExtension(filePath);
             using var fileStream = new FileStream(filePath, FileMode.Open, FileAccess.Read);
 
