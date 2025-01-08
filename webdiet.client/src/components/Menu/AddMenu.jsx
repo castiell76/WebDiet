@@ -57,6 +57,7 @@ export default function AddMenu({ showToast }) {
     const [showModal, setShowModal] = useState(false);
     const [isKcalCalculated, setisKcalCalculated] = useState(false);
     const [calculatedKcal, setCalculatedKcal] = useState('');
+    const [isKcalEntered, setIsKcalEntered] = useState(false);
     const [userData, setUserData] = useState({
         gender: "",
         age: "",
@@ -82,7 +83,7 @@ export default function AddMenu({ showToast }) {
 
     const activityOptions = [
         { name: 'None physical activity' },
-        { name: 'Light activity (activity  approx. 140 minutes per week)/Office worker who is solely involved in duties '},
+        { name: 'Light activity (activity  approx. 140 minutes per week)/Office worker who is solely involved in duties ' },
         { name: 'Moderate activity (activity  approx. 280 minutes per week)/Office worker who exercises 2-3 times per week for at least an hour' },
         { name: 'High activity (activity  approx. 420 minutes per week)/Office worker who exercises 3-4 times per week for at least an hour' },
         { name: 'Very high physical activity (activity  approx. 560 minutes per week)/Professional athlete who exercises at least 6 hours per week or a hard worker' },
@@ -101,11 +102,12 @@ export default function AddMenu({ showToast }) {
     ];
 
 
+
     const mealImages = {
         Breakfast: "/assets/breakfast.jpg",
         Lunch: "/assets/lunch.jpg",
         Dinner: "/assets/dinner.jpg",
-        Tea: "/assets/tea.jpg",
+        Snack: "/assets/tea.jpg",
         Supper: "/assets/supper.jpg"
     };
     const [meals, setMeals] = useState([]);
@@ -119,14 +121,18 @@ export default function AddMenu({ showToast }) {
             .catch((error) => console.error("Error:", error));
     }, []);
 
-    useEffect(() => {
-        console.log("formData updated:", formData);
-    }, [formData]);
 
     const [mealCount, setMealCount] = useState(0);
 
     const handleClose = () => setShowModal(false);
     const handleCloseAllDishesModal = () => setShowAllDishesModal(false);
+    const [assignedMeals, setAssignedMeals] = useState({
+        Breakfast: null,
+        Lunch: null,
+        Dinner: null,
+        Supper: null,
+        Snack: null,
+    });
 
     const handleSelectChange = (event) => {
         const selectedValue = parseInt(event.target.value, 10);
@@ -167,7 +173,7 @@ export default function AddMenu({ showToast }) {
             case 2:
                 return ["Breakfast", "Lunch", "Dinner", "Supper"];
             case 3:
-                return ["Breakfast", "Lunch", "Dinner", "Tea", "Supper"];
+                return ["Breakfast", "Lunch", "Dinner", "Snack", "Supper"];
             default:
                 return [];
         }
@@ -187,7 +193,7 @@ export default function AddMenu({ showToast }) {
                 },
                 body: JSON.stringify(userData),
             });
-            
+
             const calculatedKcal = await response.json();
             setisKcalCalculated(true);
             setCalculatedKcal(calculatedKcal)
@@ -200,67 +206,74 @@ export default function AddMenu({ showToast }) {
         };
     }
     const handleSubmit = async (e) => {
-            e.preventDefault();
+        e.preventDefault();
 
-            try {
-                const token = localStorage.getItem("jwtToken");
+        try {
+            const token = localStorage.getItem("jwtToken");
 
-                const transformedData = {
-                    ...formData,
-                    dishes: formData.dishes.map(dish => ({
-                        type: dish.type,
-                        dishId: dish.id,
+            const transformedData = {
+                ...formData,
+                dishes: formData.dishes.map(dish => ({
+                    type: dish.type,
+                    dishId: dish.id,
 
-                    }))
-                };
+                }))
+            };
 
-                const response = await fetch("/api/menu", {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json",
-                        "Authorization": `Bearer ${token}`
-                    },
-                    body: JSON.stringify(transformedData),
+            const response = await fetch("/api/menu", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${token}`
+                },
+                body: JSON.stringify(transformedData),
+            });
+
+
+
+            if (response.ok) {
+                showToast({ message: "Menu has been added!", variant: 'success' });
+
+                setFormData({
+                    description: "",
+                    date: new Date(),
+                    kcal: "",
+                    dishes: [],
+
                 });
+                console.log("sprawdzam...", formData)
+            } else {
+                const errorData = await response.json();
+                console.error("Server error:", errorData);
+                showToast("Error occurred while adding the meal.");
 
-
-
-                if (response.ok) {
-                    showToast({ message: "Menu has been added!", variant: 'success' });
-
-                    setFormData({
-                        description: "",
-                        date: new Date(),
-                        kcal: "",
-                        dishes: [],
-
-                    });
-                    console.log("sprawdzam...", formData)
-                } else {
-                    const errorData = await response.json();
-                    console.error("Server error:", errorData);
-                    showToast("Error occurred while adding the meal.");
-
-                }
-            } catch (error) {
-                console.error("Error occurred:", error.response, error);
-                showToast("Error connecting with server.");
             }
-        };
+        } catch (error) {
+            console.error("Error occurred:", error.response, error);
+            showToast("Error connecting with server.");
+        }
+        
+       
+    };
 
     const handleRangeChange = (e) => {
-            const value = parseFloat(e.target.value);
-            setUserData(prev => ({
-                ...prev,
-                goalPace: value
-            }));
+        const value = parseFloat(e.target.value);
+        setUserData(prev => ({
+            ...prev,
+            goalPace: value
+        }));
     };
+
+    const handleSuggestDishes = async (e) => {
+        e.preventDefault();
+        setShowAllDishesModal(true);
+
+    }
 
     const handleGetMenu = async (e) => {
         e.preventDefault();
         try {
             const token = localStorage.getItem("jwtToken");
-
             const response = await fetch("/api/menu/menusuggestion", {
                 method: "POST",
                 headers: {
@@ -273,325 +286,302 @@ export default function AddMenu({ showToast }) {
             const menuDto = await response.json();
 
             if (menuDto.dishes && menuDto.dishes.length > 0) {
-                // Upewnij siê, ¿e ka¿de danie ma wymagane pola
-                const transformedDishes = menuDto.dishes.map(dish => ({
-                    id: dish.dishId,
-                    name: dish.name || "Unknown",
-                    type: dish.type,
-                    ingredients: dish.ingredients || []
-                }));
+                const updatedMeals = {};
 
-                // Aktualizuj ka¿de danie osobno przez handleMealSelect
-                transformedDishes.forEach(dish => {
-                    const mealType = dish.type;
-                    handleMealSelect(mealType, {
-                        id: dish.id,
-                        name: dish.name,
-                        ingredients: dish.ingredients
-                    });
+                menuDto.dishes.forEach(menuItem => {
+                    const mealType = menuItem.type.charAt(0).toUpperCase() + menuItem.type.slice(1);
+                    const dishToSelect = {
+                        id: menuItem.dishId,
+                        name: menuItem.dish.name,
+                        ingredients: menuItem.dish.ingredients || [],
+                    };
+
+                    updatedMeals[mealType] = dishToSelect;
                 });
 
-                // Aktualizuj równie¿ formData
-                setFormData(prev => ({
-                    ...prev,
-                    kcal: menuDto.kcal || prev.kcal,
-                    dishes: transformedDishes
-                }));
+                setAssignedMeals(updatedMeals); // Aktualizujemy assignedMeals
 
-                handleCloseAllDishesModal();
-                showToast({ message: "Menu suggestion applied successfully!", variant: 'success' });
+                setFormData((prev) => ({
+                    ...prev,
+                    dishes: menuDto.dishes.map((menuItem) => ({
+                        id: menuItem.dishId,
+                        name: menuItem.dish.name,
+                        type: menuItem.type,
+                        ingredients: menuItem.dish.ingredients || [],
+                    })),
+                }));
             }
         } catch (error) {
             console.error("Error occurred:", error);
-            showToast({ message: "Error getting menu suggestion.", variant: 'error' });
         }
     };
-
 
     const handleMealSelect = (mealType, selectedMeal) => {
-        console.log("handleMealSelect called with:", mealType, selectedMeal); // debugging
-        if (!selectedMeal || !selectedMeal.id) {
-            console.error('Invalid meal selected:', selectedMeal);
-            return;
-        }
-
-        setFormData((prev) => {
-            const newDishes = [
-                ...prev.dishes.filter((dish) => dish.type !== mealType),
-                {
-                    type: mealType,
-                    id: selectedMeal.id,
-                    name: selectedMeal.name,
-                    ingredients: selectedMeal.ingredients || [],
-                },
-            ];
-            console.log("Updated dishes:", newDishes); // debugging
-            return {
-                ...prev,
-                dishes: newDishes,
-            };
-        });
+        setAssignedMeals((prev) => ({
+            ...prev,
+            [mealType]: selectedMeal,
+        }));
     };
+
     const mealTypes = getMealTypes(mealCount);
 
-        return (
-            <Container>
-                <h1>Add Menu</h1>
-                <Form onSubmit={handleSubmit}>
-                    <Form.Group className="mb-3" controlId="addMenu.date">
-                        <Form.Label>Date</Form.Label>
-                        <DatePicker
-                            selected={formData.date}
-                            onChange={(date) => setFormData({ ...formData, date })}
-                            dateFormat="yyyy-MM-dd"
-                        />
-                    </Form.Group>
-                    <Form.Group className="mb-3" controlId="addMenu.description">
-                        <Form.Label>Description</Form.Label>
-                        <Form.Control
-                            type="text"
-                            placeholder="Menu description - optional"
-                            value={formData.description}
-                            name="description"
-                            onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                        />
-                    </Form.Group>
-                    <Form.Group className="mb-3" controlId="addMenu.kcal">
-                        <Form.Label>{isKcalCalculated
-                            ? `Kcal [suggested calculated kcal is ${calculatedKcal}]`
-                            : "Kcal"}</Form.Label>
-                        <Form.Control
-                            type="number"
-                            placeholder="Kcal total"
-                            value={formData.kcal}
-                            name="kcal"
-                            onChange={(e) => {
-                                setFormData({ ...formData, kcal: parseFloat(e.target.value) || 0 });
-                                setAutoMenuData((prevAutoMenuData) => ({
-                                    ...prevAutoMenuData,
-                                    kcal: parseFloat(e.target.value),
-                                }));
-                            }}
-                        />
-                    </Form.Group>
-                    <Button onClick={() => setShowModal(true)}>
-                        Calculate KCal
-                    </Button>
+    return (
+        <Container>
+            <h1>Add Menu</h1>
+            <Form onSubmit={handleSubmit}>
+                <Form.Group className="mb-3" controlId="addMenu.date">
+                    <Form.Label>Date</Form.Label>
+                    <DatePicker
+                        selected={formData.date}
+                        onChange={(date) => setFormData({ ...formData, date })}
+                        dateFormat="yyyy-MM-dd"
+                    />
+                </Form.Group>
+                <Form.Group className="mb-3" controlId="addMenu.description">
+                    <Form.Label>Description</Form.Label>
+                    <Form.Control
+                        type="text"
+                        placeholder="Menu description - optional"
+                        value={formData.description}
+                        name="description"
+                        onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                    />
+                </Form.Group>
+                <Form.Group className="mb-3" controlId="addMenu.kcal">
+                    <Form.Label>{isKcalCalculated
+                        ? `Kcal [suggested calculated kcal is ${calculatedKcal}]`
+                        : "Kcal"}</Form.Label>
+                    <Form.Control
+                        type="number"
+                        placeholder="Kcal total"
+                        value={formData.kcal}
+                        name="kcal"
+                        required
+                        onChange={(e) => {
+                            const kcalValue = parseFloat(e.target.value) || 0;
+                            setFormData({ ...formData, kcal: kcalValue });
+                            setAutoMenuData((prevAutoMenuData) => ({
+                                ...prevAutoMenuData,
+                                kcal: kcalValue,
+                            }));
+                            setIsKcalEntered(kcalValue > 0);
+                        }}
+                    />
+                </Form.Group>
+                <Button onClick={() => setShowModal(true)}>
+                    Calculate KCal
+                </Button>
 
+                {isKcalEntered && (
                     <Form.Select className="mb-3" aria-label="Meals quantity" onChange={handleSelectChange}>
                         <option>Choose meals quantity</option>
                         <option value="1">Three</option>
                         <option value="2">Four</option>
                         <option value="3">Five</option>
                     </Form.Select>
+                )}
+                {isKcalEntered && (
                     <div className="meal-cards d-flex justify-content-center align-items-center container py-4">
-                        <Button onClick={() => setShowAllDishesModal(true) }>
+                        <Button onClick={handleSuggestDishes}>
                             Suggest all dishes
                         </Button>
-                        {mealTypes.map((mealType) => {
-                            const currentDish = formData.dishes.find(dish => dish.type.toLowerCase() === mealType.toLowerCase());
-
-                            return (
-                                <MealCard
-                                    key={mealType}
-                                    mealType={mealType}
-                                    description={`Description for ${mealType.toLowerCase()}`}
-                                    imagePath={mealImages[mealType]}
-                                    meals={meals}
-                                    currentSelectedMeal={currentDish ? {
-                                        id: currentDish.id,
-                                        name: currentDish.name,
-                                        ingredients: currentDish.ingredients
-                                    } : null}
-                                    onMealSelect={(selectedMeal) => {
-                                        handleMealSelect(mealType, selectedMeal);
-                                    }}
-                                />
-                            );
-                        })}
+                        {mealTypes.map((mealType) => (
+                            <MealCard
+                                key={mealType}
+                                mealType={mealType}
+                                description={`Description for ${mealType.toLowerCase()}`}
+                                imagePath={mealImages[mealType]}
+                                meals={meals}
+                                selectedMeal={assignedMeals[mealType]}
+                                onMealSelect={(selectedMeal) => handleMealSelect(mealType, selectedMeal)}
+                            />
+                        ))}
                     </div>
+                ) }
+               
+                
 
-                    <Button type="submit" variant="primary" className="mt-3">
-                        Add Menu
+                <Button type="submit" variant="primary" className="mt-3">
+                    Add Menu
+                </Button>
+            </Form>
+
+            <Modal show={showAllDishesModal} onHide={handleCloseAllDishesModal}>
+                <Modal.Header closeButton>
+                    <Modal.Title>Suggest all dishes</Modal.Title>
+                </Modal.Header>
+                <Modal.Body>
+                    Select type of allergens you want to exclude from diet
+                    <MultiSelectSearchAllergen onSelectionChange={handleExcludedAllergens}></MultiSelectSearchAllergen>
+                    Select ingredients you want to exclude from diet
+                    <MultiSelectSearchIngredient onSelectionChange={handleExcludedIngredients}></MultiSelectSearchIngredient>
+                    <Button
+                        onClick={handleGetMenu}>
+                        Generate menu
                     </Button>
-                </Form>
+                </Modal.Body>
+            </Modal>
 
-                <Modal show={showAllDishesModal} onHide={handleCloseAllDishesModal}>
-                    <Modal.Header closeButton>
-                        <Modal.Title>Suggest all dishes</Modal.Title>
-                    </Modal.Header>
-                    <Modal.Body>
-                        Select type of allergens you want to exclude from diet
-                        <MultiSelectSearchAllergen onSelectionChange={handleExcludedAllergens }></MultiSelectSearchAllergen>
-                        Select ingredients you want to exclude from diet
-                        <MultiSelectSearchIngredient onSelectionChange={handleExcludedIngredients}></MultiSelectSearchIngredient>
-                        <Button 
-                            onClick={handleGetMenu}>
-                            Generate menu
-                        </Button>
-                    </Modal.Body>
-                </Modal>
+            <Modal show={showModal} onHide={handleClose}>
+                <Modal.Header closeButton>
+                    <Modal.Title>Calculate kCal</Modal.Title>
+                </Modal.Header>
+                <Modal.Body>
 
-                <Modal show={showModal} onHide={handleClose}>
-                    <Modal.Header closeButton>
-                        <Modal.Title>Calculate kCal</Modal.Title>
-                    </Modal.Header>
-                    <Modal.Body>
+                    <Form onSubmit={handleSubmitModal}>
+                        <Form.Group className="mb-3" controlId="userData.jobActivity">
+                            <Form.Label>Choose your goal</Form.Label>
+                            <div className="d-flex flex-wrap gap-2">
+                                {genders.map((option, idx) => (
+                                    <ToggleButton
+                                        key={idx}
+                                        id={`gender-${idx}`}
+                                        type="radio"
+                                        variant="outline-primary"
+                                        name="gender"
+                                        value={option.name}
+                                        checked={userData.gender === option.name}
+                                        onClick={(e) => {
+                                            e.preventDefault();
+                                            setUserData(prev => ({
+                                                ...prev,
+                                                gender: option.name
+                                            }));
+                                        }}
+                                    >
+                                        {option.name}
+                                    </ToggleButton>
+                                ))}
+                            </div>
+                        </Form.Group>
+                        <Form.Group className="mb-3" controlId="userData.age">
+                            <Form.Label>Set your age</Form.Label>
+                            <Form.Control
+                                type="number"
+                                placeholder="Age"
+                                value={userData.age}
+                                onChange={(e) => setUserData((prevUserData) => ({ ...prevUserData, age: e.target.value }))}
+                            />
+                        </Form.Group>
+                        <Form.Group className="mb-3" controlId="userData.height">
+                            <Form.Label>Set your height</Form.Label>
+                            <Form.Control
+                                type="number"
+                                placeholder="Height [cm]"
+                                value={userData.height}
+                                onChange={(e) => setUserData((prevUserData) => ({ ...prevUserData, height: e.target.value }))}
+                            />
+                        </Form.Group>
+                        <Form.Group className="mb-3" controlId="userData.weight">
+                            <Form.Label>Set your weight</Form.Label>
+                            <Form.Control
+                                type="number"
+                                placeholder="Weight [kg]"
+                                value={userData.weight}
+                                onChange={(e) => setUserData((prevUserData) => ({ ...prevUserData, weight: e.target.value }))}
+                            />
+                        </Form.Group>
+                        <Form.Group className="mb-3" controlId="userData.activity">
+                            <Form.Label>Choose your physical activity</Form.Label>
+                            <div className="d-flex flex-wrap gap-2">
+                                {activityOptions.map((option, idx) => (
+                                    <ToggleButton
+                                        key={idx}
+                                        id={`activity-${idx}`}
+                                        type="radio"
+                                        variant="outline-primary"
+                                        name="activity"
+                                        value={option.name}
+                                        checked={userData.activity === option.name}
+                                        onClick={(e) => {
+                                            e.preventDefault();
+                                            setUserData(prev => ({
+                                                ...prev,
+                                                activity: option.name
+                                            }));
+                                        }}
+                                    >
+                                        {option.name}
+                                    </ToggleButton>
+                                ))}
+                            </div>
+                        </Form.Group>
 
-                        <Form onSubmit={handleSubmitModal}>
-                            <Form.Group className="mb-3" controlId="userData.jobActivity">
-                                <Form.Label>Choose your goal</Form.Label>
-                                <div className="d-flex flex-wrap gap-2">
-                                    {genders.map((option, idx) => (
-                                        <ToggleButton
-                                            key={idx}
-                                            id={`gender-${idx}`}
-                                            type="radio"
-                                            variant="outline-primary"
-                                            name="gender"
-                                            value={option.name}
-                                            checked={userData.gender === option.name}
-                                            onClick={(e) => {
-                                                e.preventDefault();
-                                                setUserData(prev => ({
-                                                    ...prev,
-                                                    gender: option.name
-                                                }));
-                                            }}
-                                        >
-                                            {option.name}
-                                        </ToggleButton>
-                                    ))}
-                                </div>
-                            </Form.Group>
-                            <Form.Group className="mb-3" controlId="userData.age">
-                                <Form.Label>Set your age</Form.Label>
-                                <Form.Control
-                                    type="number"
-                                    placeholder="Age"
-                                    value={userData.age}
-                                    onChange={(e) => setUserData((prevUserData) => ({ ...prevUserData, age: e.target.value }))}
-                                />
-                            </Form.Group>
-                            <Form.Group className="mb-3" controlId="userData.height">
-                                <Form.Label>Set your height</Form.Label>
-                                <Form.Control
-                                    type="number"
-                                    placeholder="Height [cm]"
-                                    value={userData.height}
-                                    onChange={(e) => setUserData((prevUserData) => ({ ...prevUserData, height: e.target.value }))}
-                                />
-                            </Form.Group>
-                            <Form.Group className="mb-3" controlId="userData.weight">
-                                <Form.Label>Set your weight</Form.Label>
-                                <Form.Control
-                                    type="number"
-                                    placeholder="Weight [kg]"
-                                    value={userData.weight}
-                                    onChange={(e) => setUserData((prevUserData) => ({ ...prevUserData, weight: e.target.value }))}
-                                />
-                            </Form.Group>
-                            <Form.Group className="mb-3" controlId="userData.activity">
-                                <Form.Label>Choose your physical activity</Form.Label>
-                                <div className="d-flex flex-wrap gap-2">
-                                    {activityOptions.map((option, idx) => (
-                                        <ToggleButton
-                                            key={idx}
-                                            id={`activity-${idx}`}
-                                            type="radio"
-                                            variant="outline-primary"
-                                            name="activity"
-                                            value={option.name}
-                                            checked={userData.activity === option.name}
-                                            onClick={(e) => {
-                                                e.preventDefault();
-                                                setUserData(prev => ({
-                                                    ...prev,
-                                                    activity: option.name
-                                                }));
-                                            }}
-                                        >
-                                            {option.name}
-                                        </ToggleButton>
-                                    ))}
-                                </div>
-                            </Form.Group>
-                          
-                            <Form.Group className="mb-3" controlId="userData.jobActivity">
-                                <Form.Label>Choose your goal</Form.Label>
-                                <div className="d-flex flex-wrap gap-2">
-                                    {goals.map((option, idx) => (
-                                        <ToggleButton
-                                            key={idx}
-                                            id={`goal-${idx}`}
-                                            type="radio"
-                                            variant="outline-primary"
-                                            name="goal"
-                                            value={option.name}
-                                            checked={userData.goal === option.name}
-                                            onClick={(e) => {
-                                                e.preventDefault();
-                                                setUserData(prev => ({
-                                                    ...prev,
-                                                    goal: option.name
-                                                }));
-                                            }}
-                                        >
-                                            {option.name}
-                                        </ToggleButton>
-                                    ))}
-                                </div>
-                            </Form.Group>
-                            {userData.goal === 'Put on a weight' && (
-                                <Form.Group className="mb-3" controlId="userData.goalPace">
-                                    <Form.Label>Choose weight loss pace (kg/week)</Form.Label>
-                                    <div>
-                                        <Form.Range
-                                            min={0.1}
-                                            max={1.0}
-                                            step={0.1}
-                                            value={userData.goalPace || 0.1}
-                                            onChange={handleRangeChange}
-                                        />
-                                        <div className="d-flex justify-content-between">
-                                            <span>0.1 kg</span>
-                                            <span>{userData.goalPace || 0.1} kg</span>
-                                            <span>1.0 kg</span>
-                                        </div>
+                        <Form.Group className="mb-3" controlId="userData.jobActivity">
+                            <Form.Label>Choose your goal</Form.Label>
+                            <div className="d-flex flex-wrap gap-2">
+                                {goals.map((option, idx) => (
+                                    <ToggleButton
+                                        key={idx}
+                                        id={`goal-${idx}`}
+                                        type="radio"
+                                        variant="outline-primary"
+                                        name="goal"
+                                        value={option.name}
+                                        checked={userData.goal === option.name}
+                                        onClick={(e) => {
+                                            e.preventDefault();
+                                            setUserData(prev => ({
+                                                ...prev,
+                                                goal: option.name
+                                            }));
+                                        }}
+                                    >
+                                        {option.name}
+                                    </ToggleButton>
+                                ))}
+                            </div>
+                        </Form.Group>
+                        {userData.goal === 'Put on a weight' && (
+                            <Form.Group className="mb-3" controlId="userData.goalPace">
+                                <Form.Label>Choose weight loss pace (kg/week)</Form.Label>
+                                <div>
+                                    <Form.Range
+                                        min={0.1}
+                                        max={1.0}
+                                        step={0.1}
+                                        value={userData.goalPace || 0.1}
+                                        onChange={handleRangeChange}
+                                    />
+                                    <div className="d-flex justify-content-between">
+                                        <span>0.1 kg</span>
+                                        <span>{userData.goalPace || 0.1} kg</span>
+                                        <span>1.0 kg</span>
                                     </div>
-                                </Form.Group>
-                            )}
-                            {userData.goal === 'Loose weight' && (
-                                <Form.Group className="mb-3" controlId="userData.goalPace">
-                                    <Form.Label>Choose weight gain pace (kg/week)</Form.Label>
-                                    <div>
-                                        <Form.Range
-                                            min={0.1}
-                                            max={1.0}
-                                            step={0.1}
-                                            value={userData.goalPace || 0.1}
-                                            onChange={handleRangeChange}
-                                        />
-                                        <div className="d-flex justify-content-between">
-                                            <span>0.1 kg</span>
-                                            <span>{userData.goalPace || 0.1} kg</span>
-                                            <span>1.0 kg</span>
-                                        </div>
+                                </div>
+                            </Form.Group>
+                        )}
+                        {userData.goal === 'Loose weight' && (
+                            <Form.Group className="mb-3" controlId="userData.goalPace">
+                                <Form.Label>Choose weight gain pace (kg/week)</Form.Label>
+                                <div>
+                                    <Form.Range
+                                        min={0.1}
+                                        max={1.0}
+                                        step={0.1}
+                                        value={userData.goalPace || 0.1}
+                                        onChange={handleRangeChange}
+                                    />
+                                    <div className="d-flex justify-content-between">
+                                        <span>0.1 kg</span>
+                                        <span>{userData.goalPace || 0.1} kg</span>
+                                        <span>1.0 kg</span>
                                     </div>
-                                </Form.Group>
-                            )}
-                        </Form>
+                                </div>
+                            </Form.Group>
+                        )}
+                    </Form>
 
-                    </Modal.Body>
-                    <Modal.Footer>
-                        <Button onClick={handleSubmitModal}>
-                            Calculate
-                        </Button>
-                        <Button variant="secondary" onClick={handleClose}>
-                            Close
-                        </Button>
-                    </Modal.Footer>
-                </Modal>
-            </Container>
-        );
-    }
+                </Modal.Body>
+                <Modal.Footer>
+                    <Button onClick={handleSubmitModal}>
+                        Calculate
+                    </Button>
+                    <Button variant="secondary" onClick={handleClose}>
+                        Close
+                    </Button>
+                </Modal.Footer>
+            </Modal>
+        </Container>
+    );
+}
