@@ -9,4 +9,5 @@ public class UserDishIngredient
     public int IngredientId { get; set; }
     public virtual Ingredient Ingredient { get; set; }
     public double? Quantity { get; set; }
+    public string? Name { get; set; }
 }

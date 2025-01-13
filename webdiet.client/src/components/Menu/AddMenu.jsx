@@ -284,6 +284,7 @@ export default function AddMenu({ showToast }) {
             });
 
             const menuDto = await response.json();
+            console.log(menuDto);
 
             if (menuDto.dishes && menuDto.dishes.length > 0) {
                 const updatedMeals = {};
@@ -291,14 +292,15 @@ export default function AddMenu({ showToast }) {
                 menuDto.dishes.forEach(menuItem => {
                     const mealType = menuItem.type.charAt(0).toUpperCase() + menuItem.type.slice(1);
                     const dishToSelect = {
-                        id: menuItem.dishId,
-                        name: menuItem.dish.name,
-                        ingredients: menuItem.dish.ingredients || [],
+                        id: menuItem.userCustomDish.id,
+                        name: menuItem.userCustomDish.name,
+                        ingredients: menuItem.userCustomDish.ingredients || [],
                     };
 
                     updatedMeals[mealType] = dishToSelect;
+                    console.log("dishToSelect", dishToSelect);
                 });
-
+                
                 setAssignedMeals(updatedMeals); // Aktualizujemy assignedMeals
 
                 setFormData((prev) => ({

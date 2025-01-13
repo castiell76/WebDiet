@@ -44,7 +44,9 @@ namespace WebDiet.Server.Services
             };
             var dishes = _context.Dishes
                 .Include(di=>di.DishIngredients)
+                .ThenInclude(i=>i.Ingredient)
                 .Include(da=>da.DishAllergens)
+                .ThenInclude(a=>a.Allergen)
                 .Include(dm=>dm.DishMenus)
                 .ToList();
 
@@ -74,11 +76,18 @@ namespace WebDiet.Server.Services
             var supperDishesDto = _mapper.Map<List<DishDto>>(supperDishes);
             var snackDishesDto = _mapper.Map<List<DishDto>>(snackDishes);
 
-            var breakfastSuggestionDto = AssignSuggestedDish("breakfast", breakfastDishesDto);
-            var lunchSuggestionDto = AssignSuggestedDish("lunch", lunchDishesDto);
-            var dinnerSuggestionDto = AssignSuggestedDish("dinner", dinnerDishesDto);
-            var supperSuggestionDto = AssignSuggestedDish("supper", supperDishesDto);
-            var snackSuggestionDto = AssignSuggestedDish("snack", snackDishesDto);
+            var breakfastKcal = dto.Kcal / dto.MealsQuantity;
+            var lunchKcal = dto.Kcal / dto.MealsQuantity * 0.75;
+            var snackKcal = dto.Kcal / dto.MealsQuantity * 0.75;
+            var dinnerKcal = dto.Kcal / dto.MealsQuantity * 1.5;
+            var supperKcal = dto.Kcal / dto.MealsQuantity;
+
+            var breakfastSuggestionDto = AssignSuggestedDish("breakfast", breakfastDishesDto, userId, breakfastKcal);
+            var lunchSuggestionDto = AssignSuggestedDish("lunch", lunchDishesDto,userId, lunchKcal);
+            var dinnerSuggestionDto = AssignSuggestedDish("dinner", dinnerDishesDto, userId, dinnerKcal);
+            var supperSuggestionDto = AssignSuggestedDish("supper", supperDishesDto, userId, supperKcal);
+            var snackSuggestionDto = AssignSuggestedDish("snack", snackDishesDto, userId, snackKcal);
+
             menuSuggestion.Dishes.Add(breakfastSuggestionDto);
             menuSuggestion.Dishes.Add(lunchSuggestionDto);
             menuSuggestion.Dishes.Add(dinnerSuggestionDto);
@@ -110,21 +119,70 @@ namespace WebDiet.Server.Services
             }
             return indexes;
         }
-        private DishMenuDto AssignSuggestedDish(string type, List<DishDto> dishes)
+        private DishMenuDto AssignSuggestedDish(string type, List<DishDto> dishes, int userId, double totalDishKcal)
         {
             var randomIndexes = GetRandomIndexes(dishes.Count);
-            DishDto suggestedDish = dishes[randomIndexes[0]];
+            DishDto suggestedDishDto = dishes[randomIndexes[0]];
+            var suggestedDish = _mapper.Map<Dish>(suggestedDishDto);
             List<DishDto> alternativeDishes = new List<DishDto>();
-            for(int i =1; i<randomIndexes.Length; i++)
+            List<UserDishIngredient> customIngredients = new List<UserDishIngredient>();
+            double factor = totalDishKcal / (suggestedDishDto.Kcal ?? 1.0);
+            for (int i =1; i<randomIndexes.Length; i++)
             {
                 alternativeDishes.Add(dishes[randomIndexes[i]]);
             }
+
+            foreach(var ingredientDto in suggestedDishDto.Ingredients)
+            {
+                var ingredient = _mapper.Map<Ingredient>(ingredientDto);
+                double quantity = Math.Round(Convert.ToDouble(ingredientDto.Quantity) * factor,1);
+                UserDishIngredient dishIngredient = new UserDishIngredient
+                {
+                    IngredientId = ingredient.Id,
+                    Quantity = quantity,
+                    Name = ingredient.Name,
+                    
+                };
+
+                customIngredients.Add(dishIngredient);
+            }
+
+
+            UserCustomDish customDish = new UserCustomDish
+            {
+                Name = $"Custom {suggestedDishDto.Name}",
+                BaseDishId = suggestedDish.Id,
+                Description = suggestedDishDto.Description,
+                Kcal = 0,
+                Fat = 0,
+                Carbo = 0,
+                Protein = 0,
+                UserId = userId,
+                CustomIngredients = customIngredients,
+                Allergens = suggestedDishDto.Allergens,
+            };
+            foreach(var userDishIngredient in customDish.CustomIngredients)
+            {
+                var ingredient = _context.Ingredients.Where(i => i.Id == userDishIngredient.IngredientId).FirstOrDefault();
+                if (ingredient != null)
+                {
+                    customDish.Protein += ingredient.Protein * userDishIngredient.Quantity / 100;
+                    customDish.Carbo += ingredient.Carbo * userDishIngredient.Quantity / 100;
+                    customDish.Fat += ingredient.Fat * userDishIngredient.Quantity / 100;
+                    customDish.Kcal += ingredient.KCal * userDishIngredient.Quantity / 100;
+                }
+                    
+            }
+
+            var customDishDto = _mapper.Map<UserCustomDishDto>(customDish);
+            
             var dishMenu = new DishMenuDto()
             {
                 Type = type,
-                Dish = suggestedDish,
+                Dish = suggestedDishDto,
                 DishId = suggestedDish.Id,
                 AlternativeDishes = alternativeDishes,
+                UserCustomDish = customDishDto,
             };
 
             return dishMenu;
