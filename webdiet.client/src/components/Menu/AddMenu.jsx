@@ -100,9 +100,6 @@ export default function AddMenu({ showToast }) {
         { name: 'Female' },
         { name: 'Other' },
     ];
-
-
-
     const mealImages = {
         Breakfast: "/assets/breakfast.jpg",
         Lunch: "/assets/lunch.jpg",
@@ -211,14 +208,23 @@ export default function AddMenu({ showToast }) {
         try {
             const token = localStorage.getItem("jwtToken");
 
+            // SprawdŸmy formData przed transformacj¹
+            console.log("FormData before transform:", formData);
+
             const transformedData = {
                 ...formData,
-                dishes: formData.dishes.map(dish => ({
-                    type: dish.type,
-                    dishId: dish.id,
-
-                }))
+                dishes: formData.dishes.map(dish => {
+                    const transformed = {
+                        type: dish.type,
+                        dishId: dish.dishId || dish.baseDishId, 
+                        userCustomDishId: dish.userCustomDishId || dish.id 
+                    };
+                    console.log("Transformed dish:", transformed);
+                    return transformed;
+                })
             };
+
+            console.log("Final transformed data:", transformedData);
 
             const response = await fetch("/api/menu", {
                 method: "POST",
@@ -284,17 +290,22 @@ export default function AddMenu({ showToast }) {
             });
 
             const menuDto = await response.json();
-            console.log(menuDto);
 
             if (menuDto.dishes && menuDto.dishes.length > 0) {
                 const updatedMeals = {};
 
-                menuDto.dishes.forEach(menuItem => {
-                    const mealType = menuItem.type.charAt(0).toUpperCase() + menuItem.type.slice(1);
+                menuDto.dishes.forEach(dish => {
+                    const mealType = dish.type.charAt(0).toUpperCase() + dish.type.slice(1);
                     const dishToSelect = {
-                        id: menuItem.userCustomDish.id,
-                        name: menuItem.userCustomDish.name,
-                        ingredients: menuItem.userCustomDish.ingredients || [],
+                        id: dish.userCustomDish.id,
+                        name: dish.userCustomDish.name,
+                        description: dish.userCustomDish.description,
+                        protein: dish.userCustomDish.protein,
+                        carbo: dish.userCustomDish.carbo,
+                        fat: dish.userCustomDish.fat,
+                        kcal: dish.userCustomDish.kcal,
+                        baseDishId: dish.userCustomDish.baseDishId,
+                        ingredients: dish.userCustomDish.customIngredients || [],
                     };
 
                     updatedMeals[mealType] = dishToSelect;
@@ -305,11 +316,12 @@ export default function AddMenu({ showToast }) {
 
                 setFormData((prev) => ({
                     ...prev,
-                    dishes: menuDto.dishes.map((menuItem) => ({
-                        id: menuItem.dishId,
-                        name: menuItem.dish.name,
-                        type: menuItem.type,
-                        ingredients: menuItem.dish.ingredients || [],
+                    dishes: menuDto.dishes.map((dish) => ({
+                        id: dish.userCustomDishId,
+                        baseDishId: dish.dishId,
+                        name: dish.dish.name,
+                        type: dish.type,
+                        ingredients: dish.dish.ingredients || [],
                     })),
                 }));
             }
@@ -319,10 +331,43 @@ export default function AddMenu({ showToast }) {
     };
 
     const handleMealSelect = (mealType, selectedMeal) => {
+        console.log("handleMealSelect - selectedMeal:", selectedMeal);
+
         setAssignedMeals((prev) => ({
             ...prev,
             [mealType]: selectedMeal,
         }));
+
+        setFormData((prev) => {
+            const updatedDishes = [...prev.dishes];
+            const existingIndex = updatedDishes.findIndex(dish => dish.type === mealType.toLowerCase());
+
+            const updatedDish = {
+                type: mealType.toLowerCase(),
+                dishId: selectedMeal.baseDishId, 
+                userCustomDishId: selectedMeal.id, 
+                name: selectedMeal.name,
+                ingredients: selectedMeal.ingredients || []
+            };
+
+            const newFormData = {
+                ...formData,
+                dishes: updatedDishes
+            };
+
+            setFormData(newFormData);
+
+            if (existingIndex !== -1) {
+                updatedDishes[existingIndex] = updatedDish;
+            } else {
+                updatedDishes.push(updatedDish);
+            }
+
+            return {
+                ...prev,
+                dishes: updatedDishes
+            };
+        });
     };
 
     const mealTypes = getMealTypes(mealCount);

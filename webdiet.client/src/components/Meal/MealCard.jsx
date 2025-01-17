@@ -2,41 +2,77 @@
 import { Button, Card, Modal, Form, Dropdown } from 'react-bootstrap';
 import MealDetails from './MealDetails';
 
-function MealCard({ mealType, description, imagePath, meals,selectedMeal, onMealSelect }) {
+function MealCard({ mealType, description, imagePath, meals, selectedMeal, onMealSelect }) {
     const [showModal, setShowModal] = useState(false);
-    const [showModalDetail, setShowModalDetail] = useState(false);
     const [searchValue, setSearchValue] = useState('');
     const [userCustomDish, setUserCustomDish] = useState(null);
     const [showAssignMealModal, setShowAssignMealModal] = useState(false);
     const [showDetailsModal, setShowDetailsModal] = useState(false);
 
     const handleAssignMealClick = () => setShowAssignMealModal(true);
-    const handleDetailsClick = () => setShowDetailsModal(true);
+
+    const handleDetailsClick = () => {
+        if (selectedMeal) {
+            // Upewnij się, że mamy wszystkie potrzebne dane
+            const customDish = {
+                id: selectedMeal.id || selectedMeal.baseDishId || 0,
+                name: selectedMeal.name,
+                description: selectedMeal.description,
+                protein: selectedMeal.protein,
+                carbo: selectedMeal.carbo,
+                fat: selectedMeal.fat,
+                kcal: selectedMeal.kcal,
+                ingredients: selectedMeal.ingredients || [],
+                baseDishId: selectedMeal.baseDishId || selectedMeal.id
+            };
+            setUserCustomDish(customDish);
+            setShowDetailsModal(true);
+        }
+    };
+
     const handleCloseAssignMeal = () => setShowAssignMealModal(false);
-    const handleCloseDetails = () => setShowDetailsModal(false);
-
+    const handleCloseDetails = () => {
+        setShowDetailsModal(false);
+        // Zachowaj stan userCustomDish po zamknięciu modala
+    };
     const handleClose = () => setShowModal(false);
-    const handleCloseDetail = () => setShowModalDetail(false);
-
 
     const handleMealSelect = (meal) => {
-        onMealSelect(meal);
+        const selectedMealWithDetails = {
+            ...meal,
+            baseDishId: meal.id, // Zachowaj oryginalny ID
+        };
+        onMealSelect(selectedMealWithDetails);
         setShowAssignMealModal(false);
     };
 
     useEffect(() => {
+        if (selectedMeal) {
+            const newCustomDish = {
+                id: selectedMeal.id || selectedMeal.baseDishId || 0,
+                name: selectedMeal.name,
+                description: selectedMeal.description,
+                protein: selectedMeal.protein,
+                carbo: selectedMeal.carbo,
+                fat: selectedMeal.fat,
+                kcal: selectedMeal.kcal,
+                ingredients: selectedMeal.ingredients || [],
+                baseDishId: selectedMeal.baseDishId || selectedMeal.id
+            };
+            setUserCustomDish(newCustomDish);
+        }
     }, [selectedMeal]);
 
     const handleSaveCustomDish = (customDishData) => {
-        setUserCustomDish({
-            id: customDishData.id,
-            baseDishId: selectedMeal.id
-        });
+        const updatedCustomDish = {
+            ...customDishData,
+            baseDishId: selectedMeal?.baseDishId || selectedMeal?.id || 0,
+            isCustom: true,
+            id:customDishData.id
+        };
+        setUserCustomDish(updatedCustomDish);
+        onMealSelect(updatedCustomDish);
     };
-
-    const filteredMeals = meals.filter((meal) =>
-        meal.name.toLowerCase().includes(searchValue.toLowerCase())
-    );
 
     return (
         <>
@@ -50,7 +86,12 @@ function MealCard({ mealType, description, imagePath, meals,selectedMeal, onMeal
                             <Card.Text>
                                 Assigned Meal: <strong>{selectedMeal.name}</strong>
                             </Card.Text>
-                            <Button variant="secondary" onClick={handleDetailsClick}>
+                            <Button
+                                variant="secondary"
+                                onClick={handleDetailsClick}
+                                className="me-2"
+                                disabled={!selectedMeal}
+                            >
                                 Details
                             </Button>
                         </>
@@ -60,83 +101,26 @@ function MealCard({ mealType, description, imagePath, meals,selectedMeal, onMeal
                     </Button>
                 </Card.Body>
             </Card>
-            <Modal show={showModal} onHide={handleClose}>
-                <Modal.Header closeButton>
-                    <Modal.Title>Assign a Meal</Modal.Title>
-                </Modal.Header>
-                <Modal.Body>
-                    
-                </Modal.Body>
-                <Modal.Footer>
-                    <Button variant="secondary" onClick={handleClose}>
-                        Close
-                    </Button>
-                </Modal.Footer>
-            </Modal>
 
-            <Modal show={showModalDetail} onHide={handleCloseDetail}>
-                <Modal.Header closeButton>
-                    <Modal.Title>Meal Details</Modal.Title>
-                </Modal.Header>
-
-            </Modal>
-            {/* Modal Assign Meal */}
-            <Modal show={showAssignMealModal} onHide={handleCloseAssignMeal}>
-                <Modal.Header closeButton>
-                    <Modal.Title>Assign a Meal</Modal.Title>
-                </Modal.Header>
-                <Form.Group className="mb-3" controlId="mealSearch">
-                    <Form.Label>Search Meals</Form.Label>
-                    <Form.Control
-                        type="text"
-                        placeholder="Search for a meal..."
-                        value={searchValue}
-                        onChange={(e) => setSearchValue(e.target.value)}
-                    />
-                </Form.Group>
-
-                <Dropdown>
-                    <Dropdown.Toggle variant="success" id="dropdown-basic">
-                        Select Meal
-                    </Dropdown.Toggle>
-                    <Dropdown.Menu>
-                        {filteredMeals.map((meal) => (
-                            <Dropdown.Item
-                                key={meal.id}
-                                onClick={() => handleMealSelect(meal)}
-                            >
-                                {meal.name}
-                            </Dropdown.Item>
-                        ))}
-                    </Dropdown.Menu>
-                </Dropdown>
-                <Modal.Footer>
-                    <Button variant="secondary" onClick={handleCloseAssignMeal}>
-                        Close
-                    </Button>
-                </Modal.Footer>
-            </Modal>
-
-            {/* Modal Show Details */}
-            <Modal show={showDetailsModal} onHide={handleCloseDetails}>
+            <Modal show={showDetailsModal} onHide={handleCloseDetails} size="lg">
                 <Modal.Header closeButton>
                     <Modal.Title>Meal Details</Modal.Title>
                 </Modal.Header>
                 <Modal.Body>
-                    <MealDetails
-                        mealId={selectedMeal?.id}
-                        isCustomDish={!!userCustomDish}
-                        customDishId={userCustomDish?.id}
-                        onClose={handleCloseDetail}
-                        onSave={handleSaveCustomDish}
-                    />
+                    {userCustomDish && (
+                        <MealDetails
+                            mealId={userCustomDish.baseDishId || userCustomDish.id}
+                            isCustomDish={true}
+                            customDishId={userCustomDish.id}
+                            initialData={userCustomDish}
+                            onClose={handleCloseDetails}
+                            onSave={handleSaveCustomDish}
+                        />
+                    )}
                 </Modal.Body>
-                <Modal.Footer>
-                    <Button variant="secondary" onClick={handleCloseDetails}>
-                        Close
-                    </Button>
-                </Modal.Footer>
             </Modal>
+
+            {/* Reszta komponentu pozostaje bez zmian */}
         </>
     );
 }

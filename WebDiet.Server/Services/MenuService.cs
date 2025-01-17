@@ -174,6 +174,9 @@ namespace WebDiet.Server.Services
                     
             }
 
+            _context.UserCustomDishes.Add(customDish);
+            _context.SaveChanges();
+
             var customDishDto = _mapper.Map<UserCustomDishDto>(customDish);
             
             var dishMenu = new DishMenuDto()
