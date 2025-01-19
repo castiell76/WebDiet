@@ -120,7 +120,6 @@ function MealCard({ mealType, description, imagePath, meals, selectedMeal, onMea
                 </Modal.Body>
             </Modal>
 
-            {/* Reszta komponentu pozostaje bez zmian */}
         </>
     );
 }

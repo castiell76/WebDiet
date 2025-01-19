@@ -24,6 +24,7 @@ export default function MenuDetails() {
                 }
 
                 const data = await response.json();
+                console.log("menudetailsres:", data);
                 setMenu(data);
                 setIsLoading(false);
             } catch (error) {
@@ -131,7 +132,8 @@ export default function MenuDetails() {
                 {menu.dishes.map((meal) => (
                     <MealDetails
                         key={`${meal.dish.id}-${meal.userCustomDishId || 'default'}`}
-                        mealId={meal.userCustomDishId || meal.dish.id}
+                        mealId={meal.dish.id}
+                        customDishId={meal.userCustomDishId }
                         isCustomDish={Boolean(meal.userCustomDishId)}
                         onClose={() => navigate(`/menu/${menu.id}`)}
                         onSave={(savedDish) => handleMealUpdate(savedDish, meal)}
