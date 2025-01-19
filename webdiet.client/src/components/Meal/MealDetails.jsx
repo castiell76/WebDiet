@@ -162,7 +162,7 @@ const MealDetails = ({ mealId, isCustomDish, customDishId, onClose, onSave }) =>
 
             setCurrentCustomDishId(savedDish.id);
             setMealDetails(savedDish);
-            setLocalIngredients(savedDish.ingredients); 
+            setLocalIngredients(savedDish.ingredients);
             setHasChanges(false);
 
             onSave && onSave({
@@ -183,12 +183,12 @@ const MealDetails = ({ mealId, isCustomDish, customDishId, onClose, onSave }) =>
     if (error) return <div className="text-danger">Error: {error}</div>;
     if (!mealDetails) return null;
 
-     return (
+    return (
         <div>
             <h3>{mealDetails.name}</h3>
-             <div className="ingredients-list">
-                 {localIngredients.map((ingredient) => (
-                    
+            <div className="ingredients-list">
+                {localIngredients.map((ingredient) => (
+
                     <div key={ingredient.id} className="ingredient-item mb-3">
                         <div className="d-flex justify-content-between align-items-center">
                             <span>{ingredient.name}</span>

@@ -317,7 +317,8 @@ export default function AddMenu({ showToast }) {
                 setFormData((prev) => ({
                     ...prev,
                     dishes: menuDto.dishes.map((dish) => ({
-                        id: dish.userCustomDishId,
+                        id: dish.userCustomDish.id,
+                        userCustomDishId: dish.userCustomDish.id, // Dodaj to pole
                         baseDishId: dish.dishId,
                         name: dish.dish.name,
                         type: dish.type,

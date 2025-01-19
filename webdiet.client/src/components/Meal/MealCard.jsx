@@ -68,7 +68,7 @@ function MealCard({ mealType, description, imagePath, meals, selectedMeal, onMea
             ...customDishData,
             baseDishId: selectedMeal?.baseDishId || selectedMeal?.id || 0,
             isCustom: true,
-            id:customDishData.id
+            id: customDishData.id
         };
         setUserCustomDish(updatedCustomDish);
         onMealSelect(updatedCustomDish);
@@ -125,4 +125,4 @@ function MealCard({ mealType, description, imagePath, meals, selectedMeal, onMea
     );
 }
 
-export default MealCard;
+export default MealCard;    

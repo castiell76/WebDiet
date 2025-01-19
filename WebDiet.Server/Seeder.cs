@@ -37,6 +37,7 @@ namespace WebDiet.Server
                     _context.Allergens.AddRange(GetAllergens());
                     _context.SaveChanges();
                 }
+                
             }
         }
 

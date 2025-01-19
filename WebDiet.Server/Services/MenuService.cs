@@ -3,6 +3,7 @@ using Humanizer;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System;
+using System.Linq;
 using WebDiet.Server.Entities;
 using WebDiet.Server.Exceptions;
 using WebDiet.Server.Models;
@@ -321,16 +322,16 @@ namespace WebDiet.Server.Services
                 UserId = userId,
                 Description = dto.Description,
                 Date = dto.Date,
-                Kcal =0,
-                Carbo =0,
-                Protein =0,
-                Fat =0,
+                Kcal = 0,
+                Carbo = 0,
+                Protein = 0,
+                Fat = 0,
             };
 
             _context.Menus.Add(menu);
             _context.SaveChanges();
 
-            var processedAllergens = new HashSet<int>(); 
+            var processedAllergens = new HashSet<int>();
 
             foreach (var dishDto in dto.Dishes)
             {
@@ -341,37 +342,74 @@ namespace WebDiet.Server.Services
                     .ThenInclude(da => da.Allergen)
                     .FirstOrDefault(d => d.Id == dishDto.DishId);
 
-                menu.Kcal += dish.Kcal;
-                menu.Protein += dish.Protein;
-                menu.Carbo += dish.Carbo;
-                menu.Fat += dish.Fat;
+                if (dish == null) continue;
 
-                if (dish != null)
+                var dishMenu = new DishMenu
                 {
-                    var dishMenu = new DishMenu
+                    MenuId = menu.Id,
+                    DishId = dish.Id,
+                    Type = dishDto.Type,
+                    UserId = userId,
+                    User = user,
+                    UserCustomDishId = dishDto.UserCustomDishId,
+                };
+
+                _context.DishMenus.Add(dishMenu);
+
+                // Handle ingredients and nutrition values based on whether it's a custom dish or not
+                if (dishDto.UserCustomDishId.HasValue)
+                {
+                    var userCustomDish = _context.UserCustomDishes
+                        .Include(ucd => ucd.CustomIngredients)
+                        .ThenInclude(ci => ci.Ingredient)
+                        .ThenInclude(i => i.IngredientAllergens)
+                        .FirstOrDefault(i => i.Id == dishDto.UserCustomDishId);
+
+                    if (userCustomDish != null)
                     {
-                        MenuId = menu.Id,
-                        DishId = dish.Id,
-                        Type = dishDto.Type,
-                        UserId = userId,
-                        User = user,
-                    };
+                        // Add nutrition values from custom dish
+                        menu.Kcal += userCustomDish.Kcal ?? 0;
+                        menu.Protein += userCustomDish.Protein ?? 0;
+                        menu.Carbo += userCustomDish.Carbo ?? 0;
+                        menu.Fat += userCustomDish.Fat ?? 0;
 
-                    _context.DishMenus.Add(dishMenu);
+                        // Process allergens from custom ingredients
+                        foreach (var customIngredient in userCustomDish.CustomIngredients)
+                        {
+                            foreach (var allergen in customIngredient.Ingredient.IngredientAllergens)
+                            {
+                                if (processedAllergens.Add(allergen.AllergenId))
+                                {
+                                    var menuAllergen = new MenuAllergen
+                                    {
+                                        MenuId = menu.Id,
+                                        AllergenId = allergen.AllergenId
+                                    };
+                                    _context.MenuAllergens.Add(menuAllergen);
+                                }
+                            }
+                        }
+                    }
+                }
+                else
+                {
+                    // Add nutrition values from default dish
+                    menu.Kcal += dish.Kcal ?? 0;
+                    menu.Protein += dish.Protein ?? 0;
+                    menu.Carbo += dish.Carbo ?? 0;
+                    menu.Fat += dish.Fat ?? 0;
 
-                
+                    // Process allergens from default ingredients
                     var ingredientIds = dish.DishIngredients.Select(di => di.IngredientId).ToList();
                     var ingredients = _context.Ingredients
                         .Include(i => i.IngredientAllergens)
                         .Where(i => ingredientIds.Contains(i.Id))
                         .ToList();
 
-              
                     foreach (var ingredient in ingredients)
                     {
                         foreach (var allergen in ingredient.IngredientAllergens)
                         {
-
                             if (processedAllergens.Add(allergen.AllergenId))
                             {
                                 var menuAllergen = new MenuAllergen
