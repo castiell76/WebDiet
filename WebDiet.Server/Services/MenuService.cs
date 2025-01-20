@@ -77,23 +77,43 @@ namespace WebDiet.Server.Services
             var supperDishesDto = _mapper.Map<List<DishDto>>(supperDishes);
             var snackDishesDto = _mapper.Map<List<DishDto>>(snackDishes);
 
-            var breakfastKcal = dto.Kcal / dto.MealsQuantity;
-            var lunchKcal = dto.Kcal / dto.MealsQuantity * 0.75;
-            var snackKcal = dto.Kcal / dto.MealsQuantity * 0.75;
-            var dinnerKcal = dto.Kcal / dto.MealsQuantity * 1.5;
-            var supperKcal = dto.Kcal / dto.MealsQuantity;
+            double breakfastKcal=0, dinnerKcal=0, supperKcal=0, snackKcal=0, lunchKcal = 0;
+
+            if(dto.MealsQuantity == 3)
+            {
+                 breakfastKcal = dto.Kcal * 0.3;
+                 dinnerKcal = dto.Kcal *0.4;
+                 supperKcal = dto.Kcal *0.3;
+            }
+            else if(dto.MealsQuantity == 4)
+            {
+
+                breakfastKcal = dto.Kcal * 0.25;
+                lunchKcal = dto.Kcal * 0.15;
+                dinnerKcal = dto.Kcal* 0.35;
+                supperKcal = dto.Kcal * 0.25;
+            }
+            else
+            {
+                 breakfastKcal = dto.Kcal * 0.25 ;
+                 lunchKcal = dto.Kcal * 0.1;
+                 snackKcal = dto.Kcal  * 0.1;
+                 dinnerKcal = dto.Kcal * 0.3;
+                 supperKcal = dto.Kcal  *0.25;
+            }
+            
 
             var breakfastSuggestionDto = AssignSuggestedDish("breakfast", breakfastDishesDto, userId, breakfastKcal);
-            var lunchSuggestionDto = AssignSuggestedDish("lunch", lunchDishesDto,userId, lunchKcal);
             var dinnerSuggestionDto = AssignSuggestedDish("dinner", dinnerDishesDto, userId, dinnerKcal);
             var supperSuggestionDto = AssignSuggestedDish("supper", supperDishesDto, userId, supperKcal);
+            var lunchSuggestionDto = AssignSuggestedDish("lunch", lunchDishesDto, userId, lunchKcal);
             var snackSuggestionDto = AssignSuggestedDish("snack", snackDishesDto, userId, snackKcal);
 
-            menuSuggestion.Dishes.Add(breakfastSuggestionDto);
-            menuSuggestion.Dishes.Add(lunchSuggestionDto);
-            menuSuggestion.Dishes.Add(dinnerSuggestionDto);
-            menuSuggestion.Dishes.Add(supperSuggestionDto);
-            menuSuggestion.Dishes.Add(snackSuggestionDto);
+            if (breakfastSuggestionDto != null) menuSuggestion.Dishes.Add(breakfastSuggestionDto);
+            if (lunchSuggestionDto != null) menuSuggestion.Dishes.Add(lunchSuggestionDto);
+            if (dinnerSuggestionDto != null) menuSuggestion.Dishes.Add(dinnerSuggestionDto);
+            if (supperSuggestionDto != null) menuSuggestion.Dishes.Add(supperSuggestionDto);
+            if (snackSuggestionDto != null) menuSuggestion.Dishes.Add(snackSuggestionDto);
 
             return menuSuggestion;
         }
@@ -122,6 +142,10 @@ namespace WebDiet.Server.Services
         }
         private DishMenuDto AssignSuggestedDish(string type, List<DishDto> dishes, int userId, double totalDishKcal)
         {
+            if(totalDishKcal == 0)
+            {
+                return null;
+            }
             var randomIndexes = GetRandomIndexes(dishes.Count);
             DishDto suggestedDishDto = dishes[randomIndexes[0]];
             var suggestedDish = _mapper.Map<Dish>(suggestedDishDto);

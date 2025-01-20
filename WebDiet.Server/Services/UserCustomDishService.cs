@@ -108,6 +108,12 @@ namespace WebDiet.Server.Services
                     Quantity = ci.Quantity,
                     Name = ingredients.FirstOrDefault(i=> i.Id == ci.IngredientId).Name,
                 }).ToList(),
+                Kcal = userCustomDish.Kcal,
+                Fat = userCustomDish.Fat,
+                Protein = userCustomDish.Protein,
+                Carbo = userCustomDish.Carbo,
+                Allergens = userCustomDish.Allergens,
+
             };
 
             return dishDto;

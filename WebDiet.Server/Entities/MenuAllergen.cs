@@ -2,6 +2,7 @@
 {
     public class MenuAllergen
     {
+        public int Id { get; set; }
         public int MenuId { get; set; }
         public Menu Menu { get; set; }
 

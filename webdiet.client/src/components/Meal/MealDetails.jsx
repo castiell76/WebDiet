@@ -186,6 +186,11 @@ const MealDetails = ({ mealId, isCustomDish, customDishId, onClose, onSave }) =>
     return (
         <div>
             <h3>{mealDetails.name}</h3>
+            <h6>Kcal:{mealDetails.kcal}</h6>
+            <h6>Protein:{mealDetails.protein}</h6>
+            <h6>Carbo:{mealDetails.carbo}</h6>
+            <h6>Fat:{mealDetails.fat}</h6>
+
             <div className="ingredients-list">
                 {localIngredients.map((ingredient) => (
 

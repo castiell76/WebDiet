@@ -2,6 +2,7 @@
 {
     public class DishAllergen
     {
+        public int Id {  get; set; }
         public int DishId { get; set; }
         public Dish Dish { get; set; }
 

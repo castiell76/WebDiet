@@ -288,12 +288,9 @@ export default function AddMenu({ showToast }) {
                 },
                 body: JSON.stringify(autoMenuData),
             });
-
             const menuDto = await response.json();
-
             if (menuDto.dishes && menuDto.dishes.length > 0) {
                 const updatedMeals = {};
-
                 menuDto.dishes.forEach(dish => {
                     const mealType = dish.type.charAt(0).toUpperCase() + dish.type.slice(1);
                     const dishToSelect = {
@@ -307,18 +304,17 @@ export default function AddMenu({ showToast }) {
                         baseDishId: dish.userCustomDish.baseDishId,
                         ingredients: dish.userCustomDish.customIngredients || [],
                     };
-
                     updatedMeals[mealType] = dishToSelect;
-                    console.log("dishToSelect", dishToSelect);
                 });
-                
-                setAssignedMeals(updatedMeals); // Aktualizujemy assignedMeals
 
+                setAssignedMeals(updatedMeals);
+
+                // Fix: Map the dishes array instead of using forEach
                 setFormData((prev) => ({
                     ...prev,
                     dishes: menuDto.dishes.map((dish) => ({
                         id: dish.userCustomDish.id,
-                        userCustomDishId: dish.userCustomDish.id, // Dodaj to pole
+                        userCustomDishId: dish.userCustomDish.id,
                         baseDishId: dish.dishId,
                         name: dish.dish.name,
                         type: dish.type,
